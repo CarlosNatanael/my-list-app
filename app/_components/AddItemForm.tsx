@@ -1,6 +1,6 @@
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { useList } from '../context/ListContext';
+import { useList } from '../_context/ListContext';
 
 export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: () => void }) => {
   const { addItem } = useList();
@@ -22,7 +22,7 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
     setName('');
     setQuantity('');
     setUnit('un');
-    onAdd(); // Fecha o formulário
+    onAdd();
   };
 
   if (!isVisible) {
@@ -70,6 +70,7 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
 };
 
 const formStyles = StyleSheet.create({
+  // AQUI ESTÁ A MUDANÇA: removi o posicionamento absoluto
   addItemContainer: {
     padding: 15,
     backgroundColor: '#f0f0f0',

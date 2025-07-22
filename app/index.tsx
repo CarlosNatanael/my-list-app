@@ -1,35 +1,60 @@
 import React, { useState } from 'react';
-import { FlatList, StatusBar, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { FlatList, StatusBar, View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, ShoppingCart, Check, DollarSign, X } from 'lucide-react-native';
-import { useList } from './context/ListContext';
-import { AddItemForm } from './components/AddItemForm';
-import { PriceModal } from './components/PriceModal';
+import { Plus, ShoppingCart, Check, DollarSign, X, Pencil } from 'lucide-react-native';
+import { useList } from './_context/ListContext';
+import { AddItemForm } from './_components/AddItemForm';
+import { PriceModal } from './_components/PriceModal';
+import { EditItemModal } from './_components/EditItemModal';
 
-// Defina o tipo Item se não estiver disponível globalmente
 type Item = {
   id: string;
   name: string;
   quantity: number;
-  unit: string;
+  unit: 'un' | 'kg';
   price?: number;
+  checked: boolean;
 };
+
 export default function HomeScreen() {
-  const { uncheckedItems, toggleItemChecked, updateItemPrice, totalPrice, checkedItemsCount } = useList();
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const { uncheckedItems, toggleItemChecked, updateItemPrice, checkedItemsTotalPrice, checkedItemsCount, updateItem, deleteItem } = useList();
+  
+  const [itemForPrice, setItemForPrice] = useState<Item | null>(null);
+  const [itemForEdit, setItemForEdit] = useState<Item | null>(null);
+
   const [isPriceModalVisible, setPriceModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
 
-  const openPriceModal = (item: Item) => {
-    setSelectedItem(item);
-    setPriceModalVisible(true);
-  };
+  // ... (todas as funções handle... e open... continuam as mesmas)
 
   const handleSavePrice = (price: number) => {
-    if (selectedItem) {
-      updateItemPrice(selectedItem.id, price);
+    if (itemForPrice) {
+      updateItemPrice(itemForPrice.id, price);
     }
+  };
+
+  const handleSaveItem = (name: string, quantity: number, unit: 'un' | 'kg') => {
+    if (itemForEdit) {
+      updateItem(itemForEdit.id, name, quantity, unit);
+    }
+  };
+
+  const handleDeleteItem = () => {
+    if (itemForEdit) {
+      deleteItem(itemForEdit.id);
+    }
+  };
+  
+  const openPriceModal = (item: Item) => {
+    setItemForPrice(item);
+    setPriceModalVisible(true);
+  };
+  
+  const openEditModal = (item: Item) => {
+    setItemForEdit(item);
+    setEditModalVisible(true);
   };
 
   const renderItem = ({ item }: { item: Item }) => (
@@ -41,6 +66,9 @@ export default function HomeScreen() {
         </Text>
       </View>
       <View style={styles.itemActions}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => openEditModal(item)}>
+          <Pencil color="#007AFF" size={24} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => openPriceModal(item)}>
           <DollarSign color="#FF9500" size={24} />
         </TouchableOpacity>
@@ -53,48 +81,72 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <FlatList
-        data={uncheckedItems}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        ListEmptyComponent={<Text style={styles.emptyText}>Sua lista está vazia. Adicione um item!</Text>}
-        contentContainerStyle={{ padding: 10, paddingBottom: 150 }}
-      />
-      
-      <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={uncheckedItems}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            ListEmptyComponent={<Text style={styles.emptyText}>Sua lista está vazia. Adicione um item!</Text>}
+            contentContainerStyle={{ padding: 10, paddingBottom: 80 }}
+          />
+        </View>
 
-      <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(!isAddingItem)}>
-        {isAddingItem ? <X color="#fff" size={28} /> : <Plus color="#fff" size={28} />}
-      </TouchableOpacity>
+        {/* O formulário agora faz parte do fluxo normal da tela */}
+        <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
+      </KeyboardAvoidingView>
 
-      <View style={styles.footer}>
-        <Link href="/cart" asChild>
-          <TouchableOpacity style={styles.footerButton}>
-            <ShoppingCart color="#fff" size={22} />
-            <Text style={styles.footerButtonText}>Carrinho ({checkedItemsCount})</Text>
+      {/* O rodapé e o botão "+" só aparecem se não estivermos adicionando um item */}
+      {!isAddingItem && (
+        <>
+          <View style={styles.footer}>
+            <Link href="/cart" asChild>
+              <TouchableOpacity style={styles.footerButton}>
+                <ShoppingCart color="#fff" size={22} />
+                <Text style={styles.footerButtonText}>Carrinho ({checkedItemsCount})</Text>
+              </TouchableOpacity>
+            </Link>
+            <Link href="/total" asChild>
+              <TouchableOpacity style={styles.footerButton}>
+                <DollarSign color="#fff" size={22} />
+                <Text style={styles.footerButtonText}>Total: R$ {checkedItemsTotalPrice.toFixed(2)}</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+          <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(true)}>
+            <Plus color="#fff" size={28} />
           </TouchableOpacity>
-        </Link>
-        <Link href="/cart" asChild>
-          <TouchableOpacity style={styles.footerButton}>
-            <DollarSign color="#fff" size={22} />
-            <Text style={styles.footerButtonText}>Total: R$ {totalPrice.toFixed(2)}</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+        </>
+      )}
+
+      {/* Quando estivermos adicionando, mostramos um botão "X" para fechar */}
+      {isAddingItem && (
+        <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(false)}>
+          <X color="#fff" size={28} />
+        </TouchableOpacity>
+      )}
 
       <PriceModal
-        item={selectedItem}
+        item={itemForPrice}
         visible={isPriceModalVisible}
         onClose={() => setPriceModalVisible(false)}
         onSave={handleSavePrice}
+      />
+      <EditItemModal
+        item={itemForEdit}
+        visible={isEditModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSaveItem}
+        onDelete={handleDeleteItem}
       />
     </SafeAreaView>
   );
 };
 
-  // Estilos básicos para evitar erros de 'styles'
-  const styles = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
