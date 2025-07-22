@@ -27,9 +27,7 @@ export default function HomeScreen() {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
 
-  // ... (todas as funções handle... e open... continuam as mesmas)
-
-  const handleSavePrice = (price: number) => {
+const handleSavePrice = (price: number) => {
     if (itemForPrice) {
       updateItemPrice(itemForPrice.id, price);
     }
@@ -82,7 +80,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
         <View style={{ flex: 1 }}>
@@ -94,12 +92,8 @@ export default function HomeScreen() {
             contentContainerStyle={{ padding: 10, paddingBottom: 80 }}
           />
         </View>
-
-        {/* O formulário agora faz parte do fluxo normal da tela */}
         <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
       </KeyboardAvoidingView>
-
-      {/* O rodapé e o botão "+" só aparecem se não estivermos adicionando um item */}
       {!isAddingItem && (
         <>
           <View style={styles.footer}>
@@ -121,8 +115,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </>
       )}
-
-      {/* Quando estivermos adicionando, mostramos um botão "X" para fechar */}
       {isAddingItem && (
         <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(false)}>
           <X color="#fff" size={28} />
