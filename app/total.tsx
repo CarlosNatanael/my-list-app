@@ -14,10 +14,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function CartScreen() {
+export default function TotalScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.emptyText}>Tela do Carrinho</Text>
+      <Text style={styles.emptyText}>Tela de Total</Text>
     </SafeAreaView>
   );
 };
