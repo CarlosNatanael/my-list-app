@@ -3,10 +3,9 @@ import { FlatList, StatusBar, View, Text, TouchableOpacity, StyleSheet } from 'r
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, ShoppingCart, Check, DollarSign, X } from 'lucide-react-native';
-import { useList } from '../contexts/ListContext';
-import { AddItemForm } from '../components/AddItemForm';
-import { PriceModal } from '../components/PriceModal';
-// As importações de React, componentes, hooks e ícones já estão no contexto acima.
+import { useList } from './context/ListContext';
+import { AddItemForm } from './components/AddItemForm';
+import { PriceModal } from './components/PriceModal';
 
 // Defina o tipo Item se não estiver disponível globalmente
 type Item = {

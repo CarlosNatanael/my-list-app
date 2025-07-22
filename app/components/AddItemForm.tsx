@@ -1,6 +1,6 @@
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { useList } from '../contexts/ListContext';
+import { useList } from '../context/ListContext';
 
 export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: () => void }) => {
   const { addItem } = useList();

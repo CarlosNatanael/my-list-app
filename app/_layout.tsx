@@ -1,4 +1,4 @@
-import { ListProvider } from './contexts/ListContext';
+import { ListProvider } from './context/ListContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { StyleSheet, Platform } from 'react-native';
