@@ -1,11 +1,14 @@
 import React from 'react';
-import AppNavigator from '../src/navigation/AppNavigator';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, Text, Button } from 'react-native';
+import { Link } from 'expo-router';
 
-export default function Index() {
+export default function HomeScreen() {
   return (
-    <SafeAreaProvider>
-      <AppNavigator />
-    </SafeAreaProvider>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Tela Inicial</Text>
+      <Link href="/cart" asChild>
+        <Button title="Ir para o Carrinho" />
+      </Link>
+    </View>
   );
 }
