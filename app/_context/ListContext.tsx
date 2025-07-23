@@ -1,25 +1,33 @@
 import React, { useState, createContext, useContext, useMemo, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Estrutura de um item
-export type Item = {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: 'un' | 'kg';
-  price?: number;
-  checked: boolean;
-};
+// Lista de categorias e sua ordem de exibição
+const CATEGORIES = [
+  'Hortifruti',
+  'Padaria',
+  'Açougue e Frios',
+  'Laticínios',
+  'Mercearia',
+  'Bebidas',
+  'Limpeza',
+  'Higiene',
+  'Outros',
+];
 
-// Nova estrutura para uma compra salva
-export type Purchase = {
-  id: string;
-  storeName: string;
-  date: string;
-  totalPrice: number;
-  items: Item[];
+// Estruturas de dados
+export type Item = { 
+  id: string; 
+  name: string; 
+  quantity: number; 
+  unit: 'un' | 'kg'; 
+  price?: number; 
+  checked: boolean; 
+  category: string;
 };
+export type Purchase = { id: string; storeName: string; date: string; totalPrice: number; items: Item[]; };
+export type SavedList = { id: string; name: string; items: Omit<Item, 'id' | 'price' | 'checked'>[]; };
 
+// Tipo completo com todas as propriedades necessárias
 type ListContextType = {
   items: Item[];
   addItem: (item: Omit<Item, 'id' | 'checked'>) => void;
@@ -29,10 +37,15 @@ type ListContextType = {
   deleteItem: (id: string) => void;
   savePurchase: (storeName: string) => Promise<void>;
   purchaseHistory: Purchase[];
+  savedLists: SavedList[];
+  saveListAsTemplate: (name: string) => Promise<void>;
+  loadListFromTemplate: (listId: string) => void;
+  deleteTemplate: (listId: string) => Promise<void>;
   uncheckedItems: Item[];
+  uncheckedItemsByCategory: { title: string; data: Item[] }[];
   checkedItems: Item[];
   totalPrice: number;
-  checkedItemsTotalPrice: number; // Novo total para itens no carrinho
+  checkedItemsTotalPrice: number;
   checkedItemsCount: number;
 };
 
@@ -40,28 +53,28 @@ const ListContext = createContext<ListContextType | undefined>(undefined);
 
 export const useList = () => {
   const context = useContext(ListContext);
-  if (!context) {
-    throw new Error('useList deve ser usado dentro de um ListProvider');
-  }
+  if (!context) throw new Error('useList deve ser usado dentro de um ListProvider');
   return context;
 };
 
 export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
+  const [savedLists, setSavedLists] = useState<SavedList[]>([]);
 
   useEffect(() => {
-    const loadHistory = async () => {
+    const loadData = async () => {
       try {
         const savedHistory = await AsyncStorage.getItem('@purchaseHistory');
-        if (savedHistory !== null) {
-          setPurchaseHistory(JSON.parse(savedHistory));
-        }
+        if (savedHistory) setPurchaseHistory(JSON.parse(savedHistory));
+
+        const savedTemplates = await AsyncStorage.getItem('@savedLists');
+        if (savedTemplates) setSavedLists(JSON.parse(savedTemplates));
       } catch (e) {
-        console.error('Falha ao carregar o histórico de compras.', e);
+        console.error('Falha ao carregar dados.', e);
       }
     };
-    loadHistory();
+    loadData();
   }, []);
 
   const addItem = useCallback((item: Omit<Item, 'id' | 'checked'>) => {
@@ -83,7 +96,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const deleteItem = useCallback((id: string) => {
     setItems(prevItems => prevItems.filter(item => item.id !== id));
   }, []);
-
+  
   const clearList = useCallback(() => {
     setItems([]);
   }, []);
@@ -96,7 +109,6 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
       totalPrice: items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0),
       items: [...items],
     };
-
     try {
       const updatedHistory = [newPurchase, ...purchaseHistory];
       setPurchaseHistory(updatedHistory);
@@ -107,20 +119,62 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [items, purchaseHistory, clearList]);
 
+  const saveListAsTemplate = useCallback(async (name: string) => {
+    const templateItems = items.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category }));
+    const newList: SavedList = { id: Date.now().toString(), name, items: templateItems };
+    try {
+      const updatedLists = [newList, ...savedLists];
+      setSavedLists(updatedLists);
+      await AsyncStorage.setItem('@savedLists', JSON.stringify(updatedLists));
+    } catch (e) {
+      console.error('Falha ao salvar lista modelo.', e);
+    }
+  }, [items, savedLists]);
+
+  const loadListFromTemplate = useCallback((listId: string) => {
+    const listToLoad = savedLists.find(list => list.id === listId);
+    if (listToLoad) {
+      const newItems = listToLoad.items.map(item => ({
+        ...item,
+        id: Date.now().toString() + Math.random(),
+        price: undefined,
+        checked: false,
+      }));
+      setItems(newItems);
+    }
+  }, [savedLists]);
+
+  const deleteTemplate = useCallback(async (listId: string) => {
+    try {
+      const updatedLists = savedLists.filter(list => list.id !== listId);
+      setSavedLists(updatedLists);
+      await AsyncStorage.setItem('@savedLists', JSON.stringify(updatedLists));
+    } catch (e) {
+      console.error('Falha ao deletar lista modelo.', e);
+    }
+  }, [savedLists]);
+
   const uncheckedItems = useMemo(() => items.filter(item => !item.checked), [items]);
   const checkedItems = useMemo(() => items.filter(item => item.checked), [items]);
   const totalPrice = useMemo(() => items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [items]);
-  
-  // NOVO: Calcula o total apenas dos itens marcados (no carrinho)
-  const checkedItemsTotalPrice = useMemo(() =>
-    checkedItems.reduce((total, item) => {
-      const itemPrice = item.price || 0;
-      return total + itemPrice * item.quantity;
-    }, 0),
-    [checkedItems]
-  );
-  
+  const checkedItemsTotalPrice = useMemo(() => checkedItems.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [checkedItems]);
   const checkedItemsCount = useMemo(() => checkedItems.length, [checkedItems]);
+
+  const uncheckedItemsByCategory = useMemo(() => {
+    const grouped = uncheckedItems.reduce((acc, item) => {
+      const { category } = item;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {} as Record<string, Item[]>);
+
+    return CATEGORIES.map(category => ({
+      title: category,
+      data: grouped[category] || [],
+    })).filter(section => section.data.length > 0);
+  }, [uncheckedItems]);
 
   const value = {
     items,
@@ -131,10 +185,15 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     deleteItem,
     savePurchase,
     purchaseHistory,
+    savedLists,
+    saveListAsTemplate,
+    loadListFromTemplate,
+    deleteTemplate,
     uncheckedItems,
+    uncheckedItemsByCategory,
     checkedItems,
     totalPrice,
-    checkedItemsTotalPrice, // Adicionado
+    checkedItemsTotalPrice,
     checkedItemsCount,
   };
 

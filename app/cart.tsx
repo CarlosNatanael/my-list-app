@@ -1,15 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { SafeAreaView, Text, StyleSheet, FlatList, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useList } from './_context/ListContext';
-import { Search, Trash2, Pencil } from 'lucide-react-native';
+import { useList, Item } from './_context/ListContext';
+import { Search, Trash2, Pencil, DollarSign } from 'lucide-react-native'; // Adicionado DollarSign
 import { EditItemModal } from './_components/EditItemModal';
-import { Item } from './_context/ListContext';
+import { PriceModal } from './_components/PriceModal'; // Adicionado PriceModal
 
 export default function CartScreen() {
-  const { checkedItems, deleteItem, updateItem } = useList();
+  const { checkedItems, deleteItem, updateItem, updateItemPrice } = useList();
   const [searchQuery, setSearchQuery] = useState('');
+  
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [itemForEdit, setItemForEdit] = useState<Item | null>(null);
+
+  // Novos estados para o modal de preço
+  const [isPriceModalVisible, setPriceModalVisible] = useState(false);
+  const [itemForPrice, setItemForPrice] = useState<Item | null>(null);
 
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -23,6 +28,18 @@ export default function CartScreen() {
   const openEditModal = (item: Item) => {
     setItemForEdit(item);
     setEditModalVisible(true);
+  };
+
+  // Novas funções para controlar o modal de preço
+  const openPriceModal = (item: Item) => {
+    setItemForPrice(item);
+    setPriceModalVisible(true);
+  };
+
+  const handleSavePrice = (price: number) => {
+    if (itemForPrice) {
+      updateItemPrice(itemForPrice.id, price);
+    }
   };
 
   const handleSaveItem = (name: string, quantity: number, unit: 'un' | 'kg') => {
@@ -58,6 +75,10 @@ export default function CartScreen() {
         <TouchableOpacity style={styles.iconButton} onPress={() => openEditModal(item)}>
           <Pencil color="#007AFF" size={24} />
         </TouchableOpacity>
+        {/* NOVO ÍCONE DE PREÇO */}
+        <TouchableOpacity style={styles.iconButton} onPress={() => openPriceModal(item)}>
+          <DollarSign color="#FF9500" size={24} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteItem(item.id, item.name)}>
           <Trash2 color="#d9534f" size={24} />
         </TouchableOpacity>
@@ -86,7 +107,6 @@ export default function CartScreen() {
         contentContainerStyle={{ padding: 10 }}
       />
       
-      {/* O MODAL DE EDIÇÃO AGORA EXISTE AQUI TAMBÉM */}
       <EditItemModal
         item={itemForEdit}
         visible={isEditModalVisible}
@@ -98,11 +118,18 @@ export default function CartScreen() {
           }
         }}
       />
+
+      {/* NOVO MODAL DE PREÇO SENDO RENDERIZADO */}
+      <PriceModal
+        item={itemForPrice}
+        visible={isPriceModalVisible}
+        onClose={() => setPriceModalVisible(false)}
+        onSave={handleSavePrice}
+      />
     </SafeAreaView>
   );
 };
 
-// ... (Estilos permanecem os mesmos da resposta anterior)
 const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -160,4 +187,4 @@ const styles = StyleSheet.create({
       fontSize: 16,
       marginTop: 40,
     },
-  });
+});

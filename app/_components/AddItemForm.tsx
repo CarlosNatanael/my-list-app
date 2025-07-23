@@ -1,12 +1,18 @@
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import { useList } from '../_context/ListContext';
+
+const CATEGORIES = [
+  'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 
+  'Bebidas', 'Limpeza', 'Higiene', 'Outros'
+];
 
 export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: () => void }) => {
   const { addItem } = useList();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState<'un' | 'kg'>('un');
+  const [category, setCategory] = useState(CATEGORIES[0]); // Categoria padrão
 
   const handleAddItem = () => {
     if (!name.trim() || !quantity.trim()) {
@@ -18,10 +24,12 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
       Alert.alert('Atenção', 'Insira uma quantidade válida.');
       return;
     }
-    addItem({ name, quantity: numQuantity, unit });
+    // Adicionando o item com a categoria
+    addItem({ name, quantity: numQuantity, unit, category });
     setName('');
     setQuantity('');
     setUnit('un');
+    setCategory(CATEGORIES[0]); // Reseta para a categoria padrão
     onAdd();
   };
 
@@ -62,6 +70,21 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
           </TouchableOpacity>
         </View>
       </View>
+      
+      {/* Seletor de Categoria */}
+      <Text style={formStyles.categoryTitle}>Categoria</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={formStyles.categoryScrollView}>
+        {CATEGORIES.map(cat => (
+          <TouchableOpacity
+            key={cat}
+            style={[formStyles.categoryButton, category === cat && formStyles.categoryButtonSelected]}
+            onPress={() => setCategory(cat)}
+          >
+            <Text style={[formStyles.categoryText, category === cat && formStyles.categoryTextSelected]}>{cat}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       <TouchableOpacity style={formStyles.addButton} onPress={handleAddItem}>
         <Text style={formStyles.addButtonText}>Adicionar Item</Text>
       </TouchableOpacity>
@@ -70,8 +93,11 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
 };
 
 const formStyles = StyleSheet.create({
-  // AQUI ESTÁ A MUDANÇA: removi o posicionamento absoluto
   addItemContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 15,
     backgroundColor: '#f0f0f0',
     borderTopWidth: 1,
@@ -91,6 +117,7 @@ const formStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginBottom: 10,
   },
   unitSelector: {
     flexDirection: 'row',
@@ -110,6 +137,32 @@ const formStyles = StyleSheet.create({
     color: '#333',
   },
   unitTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  categoryTitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  categoryScrollView: {
+    marginBottom: 15,
+  },
+  categoryButton: {
+    backgroundColor: '#e0e0e0',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  categoryButtonSelected: {
+    backgroundColor: '#007AFF',
+  },
+  categoryText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  categoryTextSelected: {
     color: '#fff',
     fontWeight: 'bold',
   },

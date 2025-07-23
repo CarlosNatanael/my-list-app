@@ -1,24 +1,15 @@
 import React, { useState } from 'react';
-import { FlatList, StatusBar, View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, ShoppingCart, Check, DollarSign, X, Pencil } from 'lucide-react-native';
-import { useList } from './_context/ListContext';
+import { useList, Item } from './_context/ListContext';
 import { AddItemForm } from './_components/AddItemForm';
 import { PriceModal } from './_components/PriceModal';
 import { EditItemModal } from './_components/EditItemModal';
 
-type Item = {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: 'un' | 'kg';
-  price?: number;
-  checked: boolean;
-};
-
 export default function HomeScreen() {
-  const { uncheckedItems, toggleItemChecked, updateItemPrice, checkedItemsTotalPrice, checkedItemsCount, updateItem, deleteItem } = useList();
+  const { uncheckedItemsByCategory, toggleItemChecked, updateItemPrice, checkedItemsTotalPrice, checkedItemsCount, updateItem, deleteItem } = useList();
   
   const [itemForPrice, setItemForPrice] = useState<Item | null>(null);
   const [itemForEdit, setItemForEdit] = useState<Item | null>(null);
@@ -27,7 +18,7 @@ export default function HomeScreen() {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
 
-const handleSavePrice = (price: number) => {
+  const handleSavePrice = (price: number) => {
     if (itemForPrice) {
       updateItemPrice(itemForPrice.id, price);
     }
@@ -79,21 +70,22 @@ const handleSavePrice = (price: number) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-      >
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={uncheckedItems}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            ListEmptyComponent={<Text style={styles.emptyText}>Sua lista está vazia. Adicione um item!</Text>}
-            contentContainerStyle={{ padding: 10, paddingBottom: 80 }}
-          />
-        </View>
-        <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
-      </KeyboardAvoidingView>
+      <StatusBar barStyle="dark-content" />
+      <SectionList
+        sections={uncheckedItemsByCategory}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeader}>{title}</Text>
+        )}
+        ListEmptyComponent={<Text style={styles.emptyText}>Sua lista está vazia. Adicione um item!</Text>}
+        contentContainerStyle={{ padding: 10, paddingBottom: 150 }}
+        stickySectionHeadersEnabled={false}
+      />
+      
+      <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
+
+      {/* Botões flutuantes e rodapé com lógica de visibilidade */}
       {!isAddingItem && (
         <>
           <View style={styles.footer}>
@@ -110,15 +102,18 @@ const handleSavePrice = (price: number) => {
               </TouchableOpacity>
             </Link>
           </View>
+
           <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(true)}>
             <Plus color="#fff" size={28} />
           </TouchableOpacity>
         </>
       )}
+      
+      {/* MUDANÇA AQUI: O botão "X" agora usa um estilo diferente para ficar mais alto */}
       {isAddingItem && (
-        <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(false)}>
-          <X color="#fff" size={28} />
-        </TouchableOpacity>
+         <TouchableOpacity style={styles.closeFab} onPress={() => setIsAddingItem(false)}>
+            <X color="#fff" size={28} />
+          </TouchableOpacity>
       )}
 
       <PriceModal
@@ -142,6 +137,15 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
+    },
+    sectionHeader: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#333',
+      backgroundColor: '#fff',
+      paddingTop: 15,
+      paddingBottom: 5,
+      paddingHorizontal: 5,
     },
     item: {
       flexDirection: 'row',
@@ -176,7 +180,24 @@ const styles = StyleSheet.create({
     fab: {
       position: 'absolute',
       right: 24,
-      bottom: 100,
+      bottom: 100, 
+      backgroundColor: '#007AFF',
+      borderRadius: 28,
+      width: 56,
+      height: 56,
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+    },
+    // NOVO ESTILO PARA O BOTÃO "X"
+    closeFab: {
+      position: 'absolute',
+      right: 24,
+      bottom: 295, // Posição mais alta para não sobrepor o formulário
       backgroundColor: '#007AFF',
       borderRadius: 28,
       width: 56,
