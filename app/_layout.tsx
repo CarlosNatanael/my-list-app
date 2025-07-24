@@ -1,31 +1,42 @@
-import { ListProvider } from './_context/ListContext';
+import { ListProvider, useList } from './_context/ListContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { TouchableOpacity, View } from 'react-native';
-import { History, Save, ListPlus } from 'lucide-react-native';
+import { History, Save, ListPlus, Trash2 } from 'lucide-react-native';
+
+const ListScreenHeader = () => {
+  const router = useRouter();
+  const { clearActiveList } = useList();
+
+  return (
+    <View style={{ flexDirection: 'row', gap: 20, marginRight: 15 }}>
+      <TouchableOpacity onPress={clearActiveList}>
+        <Trash2 color="#d9534f" size={26} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/save-template')}>
+        <Save color="#007AFF" size={26} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/templates')}>
+        <ListPlus color="#007AFF" size={26} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/history')}>
+        <History color="#007AFF" size={26} />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function RootLayout() {
-  const router = useRouter();
-
   return (
     <ListProvider>
       <SafeAreaProvider>
         <Stack screenOptions={{ headerStyle: { backgroundColor: '#f8f8f8' } }}>
-          {/* Nova tela principal (Menu) */}
           <Stack.Screen name="index" options={{ title: 'Buy Fast' }} />
-          
-          {/* Tela da Lista de Compras */}
           <Stack.Screen 
             name="list" 
             options={{ 
               title: 'Minha Lista de Compras',
-              headerRight: () => (
-                <View style={{ flexDirection: 'row', gap: 20, marginRight: 15 }}>
-                  <TouchableOpacity onPress={() => router.push('/save-template')}><Save color="#007AFF" size={26} /></TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/templates')}><ListPlus color="#007AFF" size={26} /></TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/history')}><History color="#007AFF" size={26} /></TouchableOpacity>
-                </View>
-              ),
+              headerRight: () => <ListScreenHeader />, // Usa o novo componente de cabeçalho
             }} 
           />
           <Stack.Screen name="cart" options={{ title: 'Meu Carrinho' }} />

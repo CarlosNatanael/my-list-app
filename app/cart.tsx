@@ -6,7 +6,7 @@ import { EditItemModal } from './_components/EditItemModal';
 import { PriceModal } from './_components/PriceModal';
 
 export default function CartScreen() {
-  const { checkedItems, deleteItem, updateItem, updateItemPrice } = useList();
+  const { checkedItems, deleteItem, updateItem, updateItemPrice, uncheckAllItems } = useList();
   const [searchQuery, setSearchQuery] = useState('');
   
   const [isEditModalVisible, setEditModalVisible] = useState(false);
@@ -96,6 +96,13 @@ export default function CartScreen() {
         />
       </View>
 
+      {checkedItems.length > 0 && (
+        <TouchableOpacity style={styles.uncheckButton} onPress={uncheckAllItems}>
+          <Undo2 color="#007AFF" size={18} />
+          <Text style={styles.uncheckButtonText}>Desmarcar Todos</Text>
+        </TouchableOpacity>
+      )}
+      
       <FlatList
         data={filteredItems}
         renderItem={renderItem}

@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext, useMemo, useCallback, useEffect } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Definindo as categorias para cada tipo de lista
@@ -23,6 +24,7 @@ type ListContextType = {
   updateItem: (id: string, name: string, quantity: number, unit: 'un' | 'kg') => void;
   deleteItem: (id: string) => void;
   uncheckAllItems: () => void;
+  clearActiveList: () => void;
   savePurchase: (storeName: string) => Promise<void>;
   purchaseHistory: Purchase[];
   savedLists: SavedList[];
@@ -121,6 +123,21 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     updateActiveList(newItems);
   }, [items, activeListType]);
 
+  const clearActiveList = useCallback(() => {
+    Alert.alert(
+      "Limpar Lista",
+      "Tem certeza que deseja remover todos os itens da lista atual?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Limpar",
+          onPress: () => updateActiveList([]),
+          style: "destructive"
+        },
+      ]
+    );
+  }, [activeListType]);
+
   const savePurchase = useCallback(async (storeName: string) => {
     const newPurchase: Purchase = {
       id: Date.now().toString(),
@@ -204,6 +221,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     updateItem,
     deleteItem,
     uncheckAllItems,
+    clearActiveList,
     savePurchase,
     purchaseHistory,
     savedLists,
