@@ -46,6 +46,7 @@ type ListContextType = {
   checkedItems: Item[];
   totalPrice: number;
   checkedItemsTotalPrice: number;
+  uncheckAllItems: () => void;
   checkedItemsCount: number;
 };
 
@@ -101,6 +102,14 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     setItems([]);
   }, []);
 
+  const uncheckAllItems = useCallback(() => {
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.checked ? { ...item, checked: false } : item
+      )
+    );
+  }, []);
+  
   const savePurchase = useCallback(async (storeName: string) => {
     const newPurchase: Purchase = {
       id: Date.now().toString(),
@@ -194,6 +203,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     checkedItems,
     totalPrice,
     checkedItemsTotalPrice,
+    uncheckAllItems,
     checkedItemsCount,
   };
 
