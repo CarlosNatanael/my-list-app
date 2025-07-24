@@ -11,21 +11,19 @@ export default function RootLayout() {
     <ListProvider>
       <SafeAreaProvider>
         <Stack screenOptions={{ headerStyle: { backgroundColor: '#f8f8f8' } }}>
+          {/* Nova tela principal (Menu) */}
+          <Stack.Screen name="index" options={{ title: 'Buy Fast' }} />
+          
+          {/* Tela da Lista de Compras */}
           <Stack.Screen 
-            name="index" 
+            name="list" 
             options={{ 
               title: 'Minha Lista de Compras',
               headerRight: () => (
                 <View style={{ flexDirection: 'row', gap: 20, marginRight: 15 }}>
-                  <TouchableOpacity onPress={() => router.push('../save-template')}>
-                    <Save color="#007AFF" size={26} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('../templates')}>
-                    <ListPlus color="#007AFF" size={26} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/history')}>
-                    <History color="#007AFF" size={26} />
-                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/save-template')}><Save color="#007AFF" size={26} /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/templates')}><ListPlus color="#007AFF" size={26} /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/history')}><History color="#007AFF" size={26} /></TouchableOpacity>
                 </View>
               ),
             }} 

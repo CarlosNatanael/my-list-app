@@ -1,19 +1,21 @@
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useList } from '../_context/ListContext';
 
-const CATEGORIES = [
-  'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 
-  'Bebidas', 'Limpeza', 'Higiene', 'Outros'
-];
-
 export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: () => void }) => {
-  const { addItem } = useList();
+  const { addItem, activeCategories, activeListType } = useList(); // Pega as categorias ativas do contexto
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState<'un' | 'kg'>('un');
-  const [category, setCategory] = useState(CATEGORIES[0]); // Categoria padrão
+  const [category, setCategory] = useState(activeCategories[0]);
 
+  // Efeito para resetar a categoria padrão quando o formulário se torna visível
+  useEffect(() => {
+    if (isVisible) {
+      setCategory(activeCategories[0]);
+    }
+  }, [isVisible, activeCategories]);
+  
   const handleAddItem = () => {
     if (!name.trim() || !quantity.trim()) {
       Alert.alert('Atenção', 'Preencha o nome e a quantidade.');
@@ -24,12 +26,11 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
       Alert.alert('Atenção', 'Insira uma quantidade válida.');
       return;
     }
-    // Adicionando o item com a categoria
     addItem({ name, quantity: numQuantity, unit, category });
     setName('');
     setQuantity('');
     setUnit('un');
-    setCategory(CATEGORIES[0]); // Reseta para a categoria padrão
+    setCategory(activeCategories[0]); 
     onAdd();
   };
 
@@ -70,11 +71,9 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
           </TouchableOpacity>
         </View>
       </View>
-      
-      {/* Seletor de Categoria */}
       <Text style={formStyles.categoryTitle}>Categoria</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={formStyles.categoryScrollView}>
-        {CATEGORIES.map(cat => (
+        {activeCategories.map(cat => (
           <TouchableOpacity
             key={cat}
             style={[formStyles.categoryButton, category === cat && formStyles.categoryButtonSelected]}
