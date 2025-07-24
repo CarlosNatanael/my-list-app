@@ -1,19 +1,18 @@
 import React, { useState, createContext, useContext, useMemo, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
+// Definindo as categorias para cada tipo de lista
 const MERCADO_CATEGORIES = [ 'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 'Bebidas', 'Limpeza', 'Higiene', 'Outros' ];
 const FARMACIA_CATEGORIES = [ 'Remédios' ];
 const CONVENIENCIA_CATEGORIES = [ 'Bebidas', 'Salgadinhos', 'Doces', 'Higiene', 'Outros' ];
 
+// Estruturas de dados
 export type Item = { id: string; name: string; quantity: number; unit: 'un' | 'kg'; price?: number; checked: boolean; category: string; };
 export type Purchase = { id: string; storeName: string; date: string; totalPrice: number; items: Item[]; };
 export type SavedList = { id: string; name: string; items: Omit<Item, 'id' | 'price' | 'checked'>[]; };
 type ListType = 'mercado' | 'farmacia' | 'conveniencia';
 
 type ListContextType = {
-  // Funções e estados para gerenciar a lista ativa
   activeListType: ListType;
   setActiveListType: (type: ListType) => void;
   activeCategories: string[];
@@ -23,16 +22,13 @@ type ListContextType = {
   updateItemPrice: (id: string, price: number) => void;
   updateItem: (id: string, name: string, quantity: number, unit: 'un' | 'kg') => void;
   deleteItem: (id: string) => void;
-  
-  // Funções e estados de histórico e templates
+  uncheckAllItems: () => void;
   savePurchase: (storeName: string) => Promise<void>;
   purchaseHistory: Purchase[];
   savedLists: SavedList[];
   saveListAsTemplate: (name: string) => Promise<void>;
   loadListFromTemplate: (listId: string) => void;
   deleteTemplate: (listId: string) => Promise<void>;
-  
-  // Dados calculados
   uncheckedItemsByCategory: { title: string; data: Item[] }[];
   checkedItems: Item[];
   totalPrice: number;
@@ -59,6 +55,22 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeListType, setActiveListType] = useState<ListType>('mercado');
   const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
   const [savedLists, setSavedLists] = useState<SavedList[]>([]);
+
+  // Carrega todos os dados do AsyncStorage ao iniciar
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const savedHistory = await AsyncStorage.getItem('@purchaseHistory');
+        if (savedHistory) setPurchaseHistory(JSON.parse(savedHistory));
+
+        const savedTemplates = await AsyncStorage.getItem('@savedLists');
+        if (savedTemplates) setSavedLists(JSON.parse(savedTemplates));
+      } catch (e) {
+        console.error('Falha ao carregar dados salvos.', e);
+      }
+    };
+    loadData();
+  }, []);
   
   const activeCategories = useMemo(() => {
     switch (activeListType) {
@@ -101,14 +113,44 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     const newItems = items.filter(item => item.id !== id);
     updateActiveList(newItems);
   }, [items, activeListType]);
-  
+
+  const uncheckAllItems = useCallback(() => {
+    const newItems = items.map(item =>
+        item.checked ? { ...item, checked: false } : item
+      );
+    updateActiveList(newItems);
+  }, [items, activeListType]);
+
+  const savePurchase = useCallback(async (storeName: string) => {
+    const newPurchase: Purchase = {
+      id: Date.now().toString(),
+      storeName: storeName || 'Local não informado',
+      date: new Date().toLocaleDateString('pt-BR'),
+      totalPrice: items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0),
+      items: [...items],
+    };
+    try {
+      const updatedHistory = [newPurchase, ...purchaseHistory];
+      setPurchaseHistory(updatedHistory);
+      await AsyncStorage.setItem('@purchaseHistory', JSON.stringify(updatedHistory));
+      updateActiveList([]);
+    } catch (e) {
+      console.error('Falha ao salvar a compra.', e);
+    }
+  }, [items, purchaseHistory, activeListType]);
+
   const saveListAsTemplate = useCallback(async (name: string) => {
     const templateItems = items.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category }));
     const newList: SavedList = { id: Date.now().toString(), name, items: templateItems };
-    // ... (resto da função igual)
+    try {
+      const updatedLists = [newList, ...savedLists];
+      setSavedLists(updatedLists);
+      await AsyncStorage.setItem('@savedLists', JSON.stringify(updatedLists));
+    } catch (e) {
+      console.error('Falha ao salvar lista modelo.', e);
+    }
   }, [items, savedLists]);
 
-  
   const loadListFromTemplate = useCallback((listId: string) => {
     const listToLoad = savedLists.find(list => list.id === listId);
     if (listToLoad) {
@@ -117,13 +159,6 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [savedLists, activeListType]);
 
-  const savePurchase = useCallback(async (storeName: string) => {
-      // ... (lógica igual, mas usando 'items' da lista ativa)
-      updateActiveList([]); // Limpa a lista ativa após salvar
-  }, [items, purchaseHistory, activeListType]);
-
-  // ... (funções deleteTemplate, useEffect, useMemos, etc., permanecem as mesmas)
-  
   const deleteTemplate = useCallback(async (listId: string) => {
     try {
       const updatedLists = savedLists.filter(list => list.id !== listId);
@@ -141,8 +176,8 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const checkedItemsCount = useMemo(() => checkedItems.length, [checkedItems]);
 
   const uncheckedItemsByCategory = useMemo(() => {
-    const grouped = items.filter(item => !item.checked).reduce((acc, item) => {
-      const category = item.category || 'Outros';
+    const grouped = uncheckedItems.reduce((acc, item) => {
+      const { category } = item;
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -156,8 +191,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
         data: grouped[category] || [],
       }))
       .filter(section => section.data.length > 0);
-  }, [items, activeCategories]);
-
+  }, [uncheckedItems, activeCategories]);
 
   const value = {
     activeListType,
@@ -169,6 +203,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     updateItemPrice,
     updateItem,
     deleteItem,
+    uncheckAllItems,
     savePurchase,
     purchaseHistory,
     savedLists,

@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   const navigateToList = (listType: 'mercado' | 'farmacia' | 'conveniencia') => {
     setActiveListType(listType);
-    router.push('../list');
+    router.push('/list');
   };
 
   return (
