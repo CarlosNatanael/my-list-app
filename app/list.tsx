@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Link } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus, ShoppingCart, Check, DollarSign, X, Pencil } from 'lucide-react-native';
 import { useList, Item } from './_context/ListContext';
 import { AddItemForm } from './_components/AddItemForm';
@@ -19,6 +19,8 @@ export default function ListScreen() {
     deleteItem 
   } = useList();
   
+  const insets = useSafeAreaInsets();
+
   const [itemForPrice, setItemForPrice] = useState<Item | null>(null);
   const [itemForEdit, setItemForEdit] = useState<Item | null>(null);
   const [isPriceModalVisible, setPriceModalVisible] = useState(false);
@@ -78,16 +80,16 @@ export default function ListScreen() {
 
       {!isAddingItem && (
         <>
-          <View style={styles.footer}>
+          <View style={[styles.footer, { bottom: insets.bottom }]}>
             <Link href="/cart" asChild><TouchableOpacity style={styles.footerButton}><ShoppingCart color="#fff" size={22} /><Text style={styles.footerButtonText}>Carrinho ({checkedItemsCount})</Text></TouchableOpacity></Link>
             <Link href="/total" asChild><TouchableOpacity style={styles.footerButton}><DollarSign color="#fff" size={22} /><Text style={styles.footerButtonText}>Total: R$ {checkedItemsTotalPrice.toFixed(2)}</Text></TouchableOpacity></Link>
           </View>
-          <TouchableOpacity style={styles.fab} onPress={() => setIsAddingItem(true)}><Plus color="#fff" size={28} /></TouchableOpacity>
+          <TouchableOpacity style={[styles.fab, { bottom: 80 + insets.bottom }]} onPress={() => setIsAddingItem(true)}><Plus color="#fff" size={28} /></TouchableOpacity>
         </>
       )}
 
       {isAddingItem && (
-         <TouchableOpacity style={styles.closeFab} onPress={() => setIsAddingItem(false)}><X color="#fff" size={28} /></TouchableOpacity>
+         <TouchableOpacity style={[styles.closeFab, { bottom: 295 + insets.bottom }]} onPress={() => setIsAddingItem(false)}><X color="#fff" size={28} /></TouchableOpacity>
       )}
 
       <PriceModal item={itemForPrice} visible={isPriceModalVisible} onClose={() => setPriceModalVisible(false)} onSave={handleSavePrice} />
@@ -96,7 +98,6 @@ export default function ListScreen() {
   );
 };
 
-// ... Cole aqui os mesmos estilos do arquivo `index.tsx` da resposta anterior
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#333', backgroundColor: '#fff', paddingTop: 15, paddingBottom: 5, paddingHorizontal: 5 },
@@ -106,9 +107,9 @@ const styles = StyleSheet.create({
     itemDetails: { fontSize: 14, color: '#666' },
     itemActions: { flexDirection: 'row', alignItems: 'center', marginLeft: 10 },
     iconButton: { marginLeft: 8, padding: 4 },
-    fab: { position: 'absolute', right: 24, bottom: 100, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
-    closeFab: { position: 'absolute', right: 24, bottom: 295, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
-    footer: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', backgroundColor: '#007AFF', padding: 16, justifyContent: 'space-between' },
+    fab: { position: 'absolute', right: 24, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
+    closeFab: { position: 'absolute', right: 24, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
+    footer: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', backgroundColor: '#007AFF', padding: 16, justifyContent: 'space-between' },
     footerButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#005BBB', borderRadius: 8, marginHorizontal: 4 },
     footerButtonText: { color: '#fff', fontSize: 16, marginLeft: 8, fontWeight: 'bold' },
     emptyText: { textAlign: 'center', color: '#999', fontSize: 16, marginTop: 40 },

@@ -1,15 +1,48 @@
 import { ListProvider, useList } from './_context/ListContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { TouchableOpacity, View } from 'react-native';
-import { History, Save, ListPlus, Trash2 } from 'lucide-react-native';
+// Importe o 'Share' do react-native e um novo ícone
+import { TouchableOpacity, View, Share, Alert } from 'react-native';
+import { History, Save, ListPlus, Trash2, Share2 } from 'lucide-react-native';
 
+// O cabeçalho agora terá a lógica de compartilhamento
 const ListScreenHeader = () => {
   const router = useRouter();
-  const { clearActiveList } = useList();
+  // Pegamos a lista de itens agrupados por categoria
+  const { clearActiveList, uncheckedItemsByCategory } = useList();
+
+  const onShare = async () => {
+    try {
+      if (uncheckedItemsByCategory.length === 0) {
+        Alert.alert("Lista Vazia", "Não há itens para compartilhar.");
+        return;
+      }
+
+      // 1. Montamos a mensagem de texto
+      let message = "Minha Lista de Compras (via Buy Fast):\n\n";
+      uncheckedItemsByCategory.forEach(section => {
+        message += `*${section.title}*\n`;
+        section.data.forEach(item => {
+          message += `- ${item.name} (${item.quantity} ${item.unit})\n`;
+        });
+        message += '\n';
+      });
+
+      // 2. Chamamos a função de compartilhar
+      await Share.share({
+        message: message,
+      });
+    } catch (error: any) {
+      Alert.alert(error.message);
+    }
+  };
 
   return (
-    <View style={{ flexDirection: 'row', gap: 20, marginRight: 15 }}>
+    <View style={{ flexDirection: 'row', gap: 20, marginRight: 15, alignItems: 'center' }}>
+      {/* Botão de Compartilhar Adicionado */}
+      <TouchableOpacity onPress={onShare}>
+        <Share2 color="#007AFF" size={24} />
+      </TouchableOpacity>
       <TouchableOpacity onPress={clearActiveList}>
         <Trash2 color="#d9534f" size={26} />
       </TouchableOpacity>
@@ -36,7 +69,7 @@ export default function RootLayout() {
             name="list" 
             options={{ 
               title: 'Minha Lista de Compras',
-              headerRight: () => <ListScreenHeader />, // Usa o novo componente de cabeçalho
+              headerRight: () => <ListScreenHeader />,
             }} 
           />
           <Stack.Screen name="cart" options={{ title: 'Meu Carrinho' }} />

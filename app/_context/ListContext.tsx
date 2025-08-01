@@ -9,7 +9,7 @@ const CONVENIENCIA_CATEGORIES = [ 'Bebidas', 'Salgadinhos', 'Doces', 'Higiene', 
 
 // Estruturas de dados
 export type Item = { id: string; name: string; quantity: number; unit: 'un' | 'kg'; price?: number; checked: boolean; category: string; };
-export type Purchase = { id: string; storeName: string; date: string; totalPrice: number; items: Item[]; };
+export type Purchase = { id: string; storeName: string; date: string; totalPrice: number; items: Item[]; paymentMethod: string; };
 export type SavedList = { id: string; name: string; items: Omit<Item, 'id' | 'price' | 'checked'>[]; };
 type ListType = 'mercado' | 'farmacia' | 'conveniencia';
 
@@ -25,7 +25,7 @@ type ListContextType = {
   deleteItem: (id: string) => void;
   uncheckAllItems: () => void;
   clearActiveList: () => void;
-  savePurchase: (storeName: string) => Promise<void>;
+  savePurchase: (storeName: string, paymentMethod: string) => Promise<void>;
   purchaseHistory: Purchase[];
   savedLists: SavedList[];
   saveListAsTemplate: (name: string) => Promise<void>;
@@ -138,13 +138,14 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }, [activeListType]);
 
-  const savePurchase = useCallback(async (storeName: string) => {
+  const savePurchase = useCallback(async (storeName: string, paymentMethod: string) => {
     const newPurchase: Purchase = {
       id: Date.now().toString(),
       storeName: storeName || 'Local não informado',
       date: new Date().toLocaleDateString('pt-BR'),
       totalPrice: items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0),
       items: [...items],
+      paymentMethod: paymentMethod,
     };
     try {
       const updatedHistory = [newPurchase, ...purchaseHistory];
@@ -155,7 +156,6 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Falha ao salvar a compra.', e);
     }
   }, [items, purchaseHistory, activeListType]);
-
   const saveListAsTemplate = useCallback(async (name: string) => {
     const templateItems = items.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category }));
     const newList: SavedList = { id: Date.now().toString(), name, items: templateItems };
@@ -190,7 +190,12 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const checkedItems = useMemo(() => items.filter(item => item.checked), [items]);
   const totalPrice = useMemo(() => items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [items]);
   const checkedItemsTotalPrice = useMemo(() => checkedItems.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [checkedItems]);
-  const checkedItemsCount = useMemo(() => checkedItems.length, [checkedItems]);
+   const checkedItemsCount = useMemo(() => {
+
+    return checkedItems.reduce((total, item) => {
+      return item.unit === 'kg' ? total + 1 : total + item.quantity;
+    }, 0);
+  }, [checkedItems]);
 
   const uncheckedItemsByCategory = useMemo(() => {
     const grouped = uncheckedItems.reduce((acc, item) => {

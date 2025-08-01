@@ -1,9 +1,11 @@
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useList } from '../_context/ListContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: () => void }) => {
-  const { addItem, activeCategories, activeListType } = useList(); // Pega as categorias ativas do contexto
+  const { addItem, activeCategories } = useList();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState<'un' | 'kg'>('un');
@@ -39,7 +41,7 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
   }
 
   return (
-    <View style={formStyles.addItemContainer}>
+    <View style={[formStyles.addItemContainer, { paddingBottom: insets.bottom + 15 }]}>
       <TextInput
         style={formStyles.input}
         placeholder="Nome do produto"
@@ -97,7 +99,8 @@ const formStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingTop: 15,
     backgroundColor: '#f0f0f0',
     borderTopWidth: 1,
     borderColor: '#ddd',

@@ -1,35 +1,37 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useList, Item } from './_context/ListContext';
 import { useRouter } from 'expo-router';
-import { Store, CheckCircle } from 'lucide-react-native';
+import { Store, CheckCircle, CreditCard, Banknote, Landmark } from 'lucide-react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const PAYMENT_METHODS = ['Cartão', 'Dinheiro', 'Pix', 'Alimentação'];
 
 export default function TotalScreen() {
   const { items, totalPrice, savePurchase } = useList();
   const [storeName, setStoreName] = useState('');
-  const router = useRouter();
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0]);
   const purchaseDate = new Date().toLocaleDateString('pt-BR');
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const handleFinishPurchase = () => {
     if (items.length === 0) {
         Alert.alert("Atenção", "Sua lista de compras está vazia.");
         return;
     }
-    Alert.alert(
-      "Finalizar Compra",
-      "Deseja salvar esta compra no seu histórico e iniciar uma nova lista?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Salvar e Finalizar",
-          onPress: async () => {
-            await savePurchase(storeName);
-            router.replace('/');
-          },
-        },
+    Alert.alert( "Finalizar Compra", "Deseja salvar esta compra no seu histórico e iniciar uma nova lista?",
+      [ 
+        { text: "Cancelar", style: "cancel" }, 
+        { text: "Salvar e Finalizar", onPress: async () => { await savePurchase(storeName, paymentMethod); router.replace('/'); } } 
       ]
     );
   };
+  const renderPaymentIcon = (method: string) => {
+    if (method === 'Dinheiro') return <Banknote color="#fff" size={20} />;
+    if (method === 'Pix') return <Landmark color="#fff" size={20} />;
+    return <CreditCard color="#fff" size={20} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,6 +58,7 @@ export default function TotalScreen() {
           <View style={styles.tableHeader}>
             <Text style={[styles.columnHeader, styles.itemColumn]}>Item</Text>
             <Text style={[styles.columnHeader, styles.qtyColumn]}>Qtd</Text>
+            <Text style={[styles.columnHeader, styles.unitPriceColumn]}>Valor Uni.</Text>
             <Text style={[styles.columnHeader, styles.totalColumn]}>Subtotal</Text>
           </View>
 
@@ -64,6 +67,7 @@ export default function TotalScreen() {
             <View key={item.id} style={styles.tableRow}>
               <Text style={[styles.cellText, styles.itemColumn]}>{item.name}</Text>
               <Text style={[styles.cellText, styles.qtyColumn]}>{item.quantity} {item.unit}</Text>
+              <Text style={[styles.cellText, styles.unitPriceColumn]}>R$ {(item.price || 0).toFixed(2)}</Text>
               <Text style={[styles.cellText, styles.totalColumn]}>
                 R$ {((item.price || 0) * item.quantity).toFixed(2)}
               </Text>
@@ -77,11 +81,31 @@ export default function TotalScreen() {
             <Text style={styles.footerText}>Valor Total:</Text>
             <Text style={styles.footerTotal}>R$ {totalPrice.toFixed(2)}</Text>
           </View>
+
+
+
+          {/* NOVO: Seletor de Meio de Pagamento */}
+          <Text style={styles.paymentTitle}>Meio de Pagamento</Text>
+          <View style={styles.paymentContainer}>
+            {PAYMENT_METHODS.map(method => (
+              <TouchableOpacity
+                key={method}
+                style={[
+                  styles.paymentButton,
+                  paymentMethod === method && styles.paymentButtonSelected
+                ]}
+                onPress={() => setPaymentMethod(method)}
+              >
+                {renderPaymentIcon(method)}
+                <Text style={styles.paymentButtonText}>{method}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
       {/* Botão de Finalizar fica fixo na parte de baixo */}
-      <View style={styles.finishButtonContainer}>
+      <View style={[styles.finishButtonContainer, { bottom: insets.bottom }]}>
         <TouchableOpacity style={styles.finishButton} onPress={handleFinishPurchase}>
           <CheckCircle color="#fff" size={22} />
           <Text style={styles.finishButtonText}>Finalizar Compra</Text>
@@ -99,7 +123,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: 15,
-        paddingBottom: 100, // Espaço para o botão de finalizar
+        paddingBottom: 100,
     },
     receipt: {
         backgroundColor: '#fff',
@@ -200,13 +224,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#34C759',
     },
+    // AQUI A MUDANÇA: Removemos o 'bottom: 0' fixo daqui
     finishButtonContainer: {
         position: 'absolute',
-        bottom: 0,
         left: 0,
         right: 0,
         padding: 15,
-        backgroundColor: '#f4f4f8', // Fundo combina com o container
+        backgroundColor: '#f4f4f8',
     },
     finishButton: {
         flexDirection: 'row',
@@ -221,5 +245,36 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         marginLeft: 8,
+    },
+    paymentTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#333',
+      marginTop: 20,
+      marginBottom: 10,
+    },
+    paymentContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    paymentButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#e0e0e0',
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      borderRadius: 8,
+    },
+    paymentButtonSelected: {
+      backgroundColor: '#007AFF',
+    },
+    paymentButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      marginLeft: 8,
+    },
+    unitPriceColumn: { 
+      flex: 2, 
+      textAlign: 'center' 
     },
 });
