@@ -22,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "softwareKeyboardLayoutMode": "resize" 
+      "softwareKeyboardLayoutMode": "resize",
+      "package": "com.carlosnatanael.mylistapp"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +38,11 @@
     },
     "packagerOpts": {
       "config": "metro.config.js"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f1df066f-3cf9-4795-ad53-82be7f76fb8e"
+      }
     }
   }
 }
