@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share, Alert } from 'react-native';
+import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, ShoppingCart, Check, DollarSign, X, Pencil, Menu, Share2 } from 'lucide-react-native';
+import { Plus, ShoppingCart, DollarSign, Pencil, Menu, Share2, Check } from 'lucide-react-native';
 import { useList, Item } from './_context/ListContext';
 import { AddItemForm } from './_components/AddItemForm';
 import { PriceModal } from './_components/PriceModal';
@@ -18,7 +18,9 @@ export default function ListScreen() {
     checkedItemsTotalPrice, 
     checkedItemsCount, 
     updateItem, 
-    deleteItem 
+    deleteItem,
+    addItem, // Pega a função de adicionar do contexto
+    activeCategories // Pega as categorias ativas do contexto
   } = useList();
   
   const insets = useSafeAreaInsets();
@@ -50,6 +52,12 @@ export default function ListScreen() {
   const openEditModal = (item: Item) => {
     setItemForEdit(item);
     setEditModalVisible(true);
+  };
+
+  // Esta função agora recebe os dados do formulário e os passa para o contexto
+  const handleAddItem = (itemData: Omit<Item, 'id' | 'price' | 'checked'>) => {
+    addItem(itemData);
+    setIsAddingItem(false);
   };
 
   const onShare = async () => {
@@ -84,7 +92,7 @@ export default function ListScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Stack.Screen
         options={{
           headerRight: () => (
@@ -103,21 +111,22 @@ export default function ListScreen() {
       />
       <StatusBar barStyle="dark-content" />
       <MenuModal visible={isMenuVisible} onClose={() => setMenuVisible(false)} />
+      
       <SectionList
+        style={{flex: 1}}
         sections={uncheckedItemsByCategory}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         renderSectionHeader={({ section: { title } }) => <Text style={styles.sectionHeader}>{title}</Text>}
         ListEmptyComponent={<Text style={styles.emptyText}>Sua lista está vazia. Adicione um item!</Text>}
-        contentContainerStyle={{ padding: 10, paddingBottom: 150 }}
+        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 150 }}
         stickySectionHeadersEnabled={false}
       />
-      
-      <AddItemForm isVisible={isAddingItem} onAdd={() => setIsAddingItem(false)} />
 
+      {/* Componentes que aparecem quando NÃO estamos adicionando item */}
       {!isAddingItem && (
         <>
-          <View style={[styles.footer, { bottom: insets.bottom }]}>
+          <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16, height: 60 + insets.bottom }]}>
             <Link href="/cart" asChild><TouchableOpacity style={styles.footerButton}><ShoppingCart color="#fff" size={22} /><Text style={styles.footerButtonText}>Carrinho ({checkedItemsCount})</Text></TouchableOpacity></Link>
             <Link href="/total" asChild><TouchableOpacity style={styles.footerButton}><DollarSign color="#fff" size={22} /><Text style={styles.footerButtonText}>Total: R$ {checkedItemsTotalPrice.toFixed(2)}</Text></TouchableOpacity></Link>
           </View>
@@ -125,8 +134,19 @@ export default function ListScreen() {
         </>
       )}
 
+      {/* Formulário aparece quando ESTAMOS adicionando item */}
       {isAddingItem && (
-         <TouchableOpacity style={[styles.closeFab, { bottom: 295 + insets.bottom }]} onPress={() => setIsAddingItem(false)}><X color="#fff" size={28} /></TouchableOpacity>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoider}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <AddItemForm 
+            isVisible={isAddingItem} 
+            onAdd={handleAddItem} 
+            onClose={() => setIsAddingItem(false)}
+            categories={activeCategories}
+          />
+        </KeyboardAvoidingView>
       )}
 
       <PriceModal item={itemForPrice} visible={isPriceModalVisible} onClose={() => setPriceModalVisible(false)} onSave={handleSavePrice} />
@@ -137,7 +157,14 @@ export default function ListScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
-    sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#333', backgroundColor: '#fff', paddingTop: 15, paddingBottom: 5, paddingHorizontal: 5 },
+    keyboardAvoider: {
+      // NOVO: Posicionamento absoluto para ancorar o formulário na base
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+    },
+    sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#333', backgroundColor: '#f9f9f9', paddingTop: 15, paddingBottom: 5, paddingHorizontal: 10 },
     item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8f8f8', marginBottom: 10, borderRadius: 8, padding: 12, justifyContent: 'space-between' },
     itemInfo: { flex: 1 },
     itemName: { fontSize: 16, fontWeight: 'bold', color: '#333' },
@@ -145,8 +172,7 @@ const styles = StyleSheet.create({
     itemActions: { flexDirection: 'row', alignItems: 'center', marginLeft: 10 },
     iconButton: { marginLeft: 8, padding: 4 },
     fab: { position: 'absolute', right: 24, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
-    closeFab: { position: 'absolute', right: 24, backgroundColor: '#007AFF', borderRadius: 28, width: 56, height: 56, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 2 },
-    footer: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', backgroundColor: '#007AFF', padding: 16, justifyContent: 'space-between' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', backgroundColor: '#007AFF', paddingTop: 10, paddingHorizontal: 16, justifyContent: 'space-between', borderTopWidth: 1, borderColor: '#005BBB' },
     footerButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#005BBB', borderRadius: 8, marginHorizontal: 4 },
     footerButtonText: { color: '#fff', fontSize: 16, marginLeft: 8, fontWeight: 'bold' },
     emptyText: { textAlign: 'center', color: '#999', fontSize: 16, marginTop: 40 },

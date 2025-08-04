@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mylistapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "android",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
