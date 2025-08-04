@@ -11,7 +11,6 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
   const [unit, setUnit] = useState<'un' | 'kg'>('un');
   const [category, setCategory] = useState(activeCategories[0]);
 
-  // Efeito para resetar a categoria padrão quando o formulário se torna visível
   useEffect(() => {
     if (isVisible) {
       setCategory(activeCategories[0]);
@@ -41,7 +40,7 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
   }
 
   return (
-    <View style={[formStyles.addItemContainer, { paddingBottom: insets.bottom + 15 }]}>
+    <View style={[formStyles.addItemContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 5 : 15 }]}>
       <TextInput
         style={formStyles.input}
         placeholder="Nome do produto"
@@ -95,10 +94,6 @@ export const AddItemForm = ({ isVisible, onAdd }: { isVisible: boolean, onAdd: (
 
 const formStyles = StyleSheet.create({
   addItemContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     paddingHorizontal: 15,
     paddingTop: 15,
     backgroundColor: '#f0f0f0',
