@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView, Text, StyleSheet, FlatList, View, TouchableOpacity, Alert } from 'react-native';
 import { useList } from './_context/ListContext';
 import { useRouter } from 'expo-router';
-import { Check, Trash2 } from 'lucide-react-native';
+import { Check, Trash2, Pencil } from 'lucide-react-native';
 import { SavedList } from './_context/ListContext';
 
 export default function TemplatesScreen() {
@@ -40,16 +40,22 @@ export default function TemplatesScreen() {
       ]
     );
   };
+
+  const handleEdit = (listId: string) => {
+    router.push({ pathname: '/edit-template', params: { listId } });
+  };
   
   const renderItem = ({ item }: { item: SavedList }) => (
     <View style={styles.item}>
       <Text style={styles.itemName}>{item.name}</Text>
       <View style={styles.itemActions}>
-        {/* Botão para USAR a lista */}
         <TouchableOpacity style={styles.iconButton} onPress={() => handleUseList(item)}>
           <Check color="#34C759" size={26} />
         </TouchableOpacity>
-        {/* Botão para EXCLUIR a lista */}
+        {/* NOVO BOTÃO DE EDITAR */}
+        <TouchableOpacity style={styles.iconButton} onPress={() => handleEdit(item.id)}>
+          <Pencil color="#007AFF" size={24} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => handleDelete(item)}>
           <Trash2 color="#d9534f" size={24} />
         </TouchableOpacity>

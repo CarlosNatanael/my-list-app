@@ -121,7 +121,6 @@ export default function PurchaseDetailScreen() {
               accessor={"population"}
               backgroundColor={"transparent"}
               paddingLeft={"15"}
-              absolute
             />
           </View>
         )}

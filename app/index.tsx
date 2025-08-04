@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingCart, Pill, Beer } from 'lucide-react-native';
+import { ShoppingCart, Pill, Beer, History } from 'lucide-react-native';
 import { useList } from './_context/ListContext';
 
 export default function HomeScreen() {
@@ -15,8 +15,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Minhas Listas</Text>
-      <Text style={styles.subtitle}>Selecione uma lista para começar</Text>
+      <Text style={styles.title}>Minhas compras</Text>
+      <Text style={styles.subtitle}>Selecione uma opção para começar</Text>
       <View style={styles.menuContainer}>
         <TouchableOpacity style={styles.menuButton} onPress={() => navigateToList('mercado')}>
           <ShoppingCart size={40} color="#fff" />
@@ -29,6 +29,10 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.menuButton} onPress={() => navigateToList('conveniencia')}>
           <Beer size={40} color="#fff" />
           <Text style={styles.menuButtonText}>Conveniência</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.menuButton, styles.historyButton]} onPress={() => router.push('/history')}>
+          <History size={40} color="#007AFF" />
+          <Text style={[styles.menuButtonText, styles.historyButtonText]}>Histórico de Compras</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -75,4 +79,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 20,
   },
+  historyButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  historyButtonText: {
+    color: '#007AFF',
+  }
 });

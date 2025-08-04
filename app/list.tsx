@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Link } from 'expo-router';
+import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share, Alert } from 'react-native';
+import { Link, Stack } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, ShoppingCart, Check, DollarSign, X, Pencil } from 'lucide-react-native';
+import { Plus, ShoppingCart, Check, DollarSign, X, Pencil, Menu, Share2 } from 'lucide-react-native';
 import { useList, Item } from './_context/ListContext';
 import { AddItemForm } from './_components/AddItemForm';
 import { PriceModal } from './_components/PriceModal';
 import { EditItemModal } from './_components/EditItemModal';
+import { MenuModal } from './_components/MenuModal';
 
 export default function ListScreen() {
   const { 
+    items,
     uncheckedItemsByCategory, 
     toggleItemChecked, 
     updateItemPrice, 
@@ -26,6 +28,7 @@ export default function ListScreen() {
   const [isPriceModalVisible, setPriceModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isMenuVisible, setMenuVisible] = useState(false);
 
   const handleSavePrice = (price: number) => {
     if (itemForPrice) updateItemPrice(itemForPrice.id, price);
@@ -49,6 +52,23 @@ export default function ListScreen() {
     setEditModalVisible(true);
   };
 
+  const onShare = async () => {
+    try {
+      let message = "Minha Lista de Compras (via Buy Fast):\n\n";
+      uncheckedItemsByCategory.forEach(section => {
+        message += `*${section.title}*\n`;
+        section.data.forEach(item => {
+          message += `- ${item.name} (${item.quantity} ${item.unit})\n`;
+        });
+        message += '\n';
+      });
+
+      await Share.share({ message });
+    } catch (error: any) {
+      Alert.alert(error.message);
+    }
+  };
+
   const renderItem = ({ item }: { item: Item }) => (
     <View style={styles.item}>
       <View style={styles.itemInfo}>
@@ -65,7 +85,24 @@ export default function ListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20, marginRight: 15 }}>
+              {items.length > 0 && (
+                <TouchableOpacity onPress={onShare}>
+                  <Share2 color="#007AFF" size={24} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <Menu color="#007AFF" size={28} />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
       <StatusBar barStyle="dark-content" />
+      <MenuModal visible={isMenuVisible} onClose={() => setMenuVisible(false)} />
       <SectionList
         sections={uncheckedItemsByCategory}
         keyExtractor={(item) => item.id}
