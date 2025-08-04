@@ -71,55 +71,62 @@ export default function EditTemplateScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Stack.Screen options={{ title: "Editar Modelo" }} />
       
-      <KeyboardAvoidingView 
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.header}>
-            <TextInput
-            style={styles.listNameInput}
-            value={listName}
-            onChangeText={setListName}
-            placeholder="Nome da Lista"
-            />
-            <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-                <Check size={20} color="#fff" />
-                <Text style={styles.saveButtonText}>Salvar</Text>
-            </TouchableOpacity>
-        </View>
+      <View style={styles.header}>
+          <TextInput
+          style={styles.listNameInput}
+          value={listName}
+          onChangeText={setListName}
+          placeholder="Nome da Lista"
+          />
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
+              <Check size={20} color="#fff" />
+              <Text style={styles.saveButtonText}>Salvar</Text>
+          </TouchableOpacity>
+      </View>
 
-        <SectionList
-            style={{ flex: 1 }}
-            sections={[{ title: 'Itens', data: items }]}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => item.name + index}
-            ListEmptyComponent={<Text style={styles.emptyText}>Nenhum item no modelo.</Text>}
-            contentContainerStyle={{ paddingBottom: 100 }}
-        />
-        
-        <AddItemForm 
-            isVisible={isAddingItem} 
-            onAdd={handleAddItem} 
-            onClose={() => setIsAddingItem(false)}
-            categories={activeCategories}
-        />
-      </KeyboardAvoidingView>
+      <SectionList
+          style={{ flex: 1 }}
+          sections={[{ title: 'Itens', data: items }]}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.name + index}
+          ListEmptyComponent={<Text style={styles.emptyText}>Nenhum item no modelo.</Text>}
+          contentContainerStyle={{ paddingBottom: 100 }}
+      />
+      
+      {isAddingItem && (
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoider}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <AddItemForm 
+              isVisible={isAddingItem} 
+              onAdd={handleAddItem} 
+              onClose={() => setIsAddingItem(false)}
+              categories={activeCategories}
+          />
+        </KeyboardAvoidingView>
+      )}
 
       {!isAddingItem && (
         <TouchableOpacity style={[styles.fab, { bottom: 20 + insets.bottom }]} onPress={() => setIsAddingItem(true)}>
             <Plus color="#fff" size={28} />
         </TouchableOpacity>
       )}
-
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  keyboardAvoider: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
   header: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee', flexDirection: 'row', gap: 10, alignItems: 'center' },
   listNameInput: { fontSize: 18, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 8, flex: 1 },
   item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: '#f8f8f8', borderBottomWidth: 1, borderBottomColor: '#eee' },
