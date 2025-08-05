@@ -23,7 +23,8 @@
       },
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
-      "package": "com.carlosnatanael.mylistapp"
+      "package": "com.carlosnatanael.mylistapp",
+      "userInterfaceStyle": "automatic" 
     },
     "web": {
       "bundler": "metro",
