@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, SectionList, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, SectionList, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useList, Item } from './_context/ListContext';
 import { AddItemForm } from './_components/AddItemForm';
@@ -88,26 +89,30 @@ export default function EditTemplateScreen() {
       </View>
 
       <SectionList
-          style={{ flex: 1 }}
-          sections={[{ title: 'Itens', data: items }]}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item.name + index}
-          ListEmptyComponent={<Text style={styles.emptyText}>Nenhum item no modelo.</Text>}
-          contentContainerStyle={{ paddingBottom: 100 }}
+        style={{ flex: 1 }}
+        sections={[{ title: 'Itens', data: items }]}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => item.name + index}
+        ListEmptyComponent={<Text style={styles.emptyText}>Nenhum item no modelo.</Text>}
+        contentContainerStyle={{ paddingBottom: isAddingItem ? 300 : 100 }}
       />
       
       {isAddingItem && (
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoider}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <AddItemForm 
-              isVisible={isAddingItem} 
-              onAdd={handleAddItem} 
-              onClose={() => setIsAddingItem(false)}
-              categories={activeCategories}
-          />
-        </KeyboardAvoidingView>
+        <View style={[StyleSheet.absoluteFill, { zIndex: 10 }]}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'android' ? 'height' : 'padding'}
+            keyboardVerticalOffset={Platform.OS === 'android' ? 64 : 0}>
+            <SafeAreaView style={{ flex: 1, justifyContent: 'flex-end' }}>
+              <AddItemForm
+                isVisible={isAddingItem}
+                onAdd={handleAddItem}
+                onClose={() => setIsAddingItem(false)}
+                categories={activeCategories}
+              />
+            </SafeAreaView>
+          </KeyboardAvoidingView>
+        </View>
       )}
 
       {!isAddingItem && (
