@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const INITIAL_MERCADO_CATEGORIES = [ 'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 'Bebidas', 'Limpeza', 'Higiene', 'Outros' ];
 const INITIAL_FARMACIA_CATEGORIES = [ 'Remédios' ];
 const INITIAL_CONVENIENCIA_CATEGORIES = [ 'Bebidas', 'Salgadinhos', 'Doces', 'Higiene', 'Outros' ];
+
 export type Item = { id: string; name: string; quantity: number; unit: 'un' | 'kg'; price?: number; checked: boolean; category: string; };
 export type Purchase = { id: string; storeName: string; date: string; totalPrice: number; items: Item[]; paymentMethod: string; };
 export type SavedList = { id: string; name: string; items: Omit<Item, 'id' | 'price' | 'checked'>[]; };
@@ -23,7 +24,7 @@ type ListContextType = {
   updateItem: (id: string, name: string, quantity: number, unit: 'un' | 'kg') => void;
   deleteItem: (id: string) => void;
   clearActiveList: () => void;
-  uncheckAllItems: () => void; // NOVO: Adicionado tipo da função
+  uncheckAllItems: () => void;
   savePurchase: (storeName: string, paymentMethod: string) => Promise<void>;
   purchaseHistory: Purchase[];
   savedLists: SavedList[];

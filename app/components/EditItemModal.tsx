@@ -1,7 +1,7 @@
 import { Modal, View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { X, Trash2 } from 'lucide-react-native'; // Importando o Trash2
 import React, { useState, useEffect } from 'react';
-import { Item } from '../_context/ListContext';
+import { Item } from '../context/ListContext';
 
 type EditItemModalProps = {
   item: Item | null;

@@ -1,9 +1,9 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet, FlatList, View, TouchableOpacity, Alert } from 'react-native';
-import { useList } from './_context/ListContext';
+import { useList } from './context/ListContext';
 import { useRouter } from 'expo-router';
 import { Check, Trash2, Pencil } from 'lucide-react-native';
-import { SavedList } from './_context/ListContext';
+import { SavedList } from './context/ListContext';
 
 export default function TemplatesScreen() {
   const { savedLists, loadListFromTemplate, deleteTemplate } = useList();

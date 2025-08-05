@@ -1,8 +1,8 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet, FlatList, View, TouchableOpacity } from 'react-native';
-import { useList } from './_context/ListContext';
+import { useList } from './context/ListContext';
 import { Link } from 'expo-router';
-import { Purchase } from './_context/ListContext';
+import { Purchase } from './context/ListContext';
 
 export default function HistoryScreen() {
   const { purchaseHistory } = useList();

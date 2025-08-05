@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useList } from '../_context/ListContext';
+import { useList } from '../context/ListContext';
 import { Trash2, Save, ListPlus, History, X, Settings } from 'lucide-react-native';
 
 type MenuModalProps = {

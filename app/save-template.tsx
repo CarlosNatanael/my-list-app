@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeAreaView, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useList } from './_context/ListContext';
+import { useList } from './context/ListContext';
 import { useRouter } from 'expo-router';
 import { Save } from 'lucide-react-native';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ShoppingCart, Pill, Beer, History } from 'lucide-react-native';
-import { useList } from './_context/ListContext';
+import { useList } from './context/ListContext';
 
 export default function HomeScreen() {
   const router = useRouter();

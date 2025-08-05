@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
-import { useList } from './_context/ListContext';
+import { useList } from './context/ListContext';
 import { X, GripVertical, Check } from 'lucide-react-native';
 
 export default function CategoriesScreen() {

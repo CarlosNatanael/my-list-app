@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ListProvider } from './_context/ListContext';
+import { ListProvider } from './context/ListContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, SplashScreen } from 'expo-router';
 import { useFonts } from 'expo-font';

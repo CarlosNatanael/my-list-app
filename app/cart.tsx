@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { SafeAreaView, Text, StyleSheet, FlatList, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useList, Item } from './_context/ListContext';
+import { useList, Item } from './context/ListContext';
 import { Search, Trash2, Pencil, DollarSign, Undo2 } from 'lucide-react-native';
-import { EditItemModal } from './_components/EditItemModal';
-import { PriceModal } from './_components/PriceModal';
+import { EditItemModal } from './components/EditItemModal';
+import { PriceModal } from './components/PriceModal';
 
 export default function CartScreen() {
   const { checkedItems, deleteItem, updateItem, updateItemPrice, uncheckAllItems } = useList();

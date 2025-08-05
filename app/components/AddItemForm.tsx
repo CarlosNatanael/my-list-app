@@ -2,7 +2,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView,
 import React, { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import { Item } from '../_context/ListContext';
+import { Item } from '../context/ListContext';
 
 type AddItemData = Omit<Item, 'id' | 'price' | 'checked'>;
 

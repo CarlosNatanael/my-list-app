@@ -3,11 +3,11 @@ import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share
 import { Link, Stack } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus, ShoppingCart, DollarSign, Pencil, Menu, Share2, Check } from 'lucide-react-native';
-import { useList, Item } from './_context/ListContext';
-import { AddItemForm } from './_components/AddItemForm';
-import { PriceModal } from './_components/PriceModal';
-import { EditItemModal } from './_components/EditItemModal';
-import { MenuModal } from './_components/MenuModal';
+import { useList, Item } from './context/ListContext';
+import { AddItemForm } from './components/AddItemForm';
+import { PriceModal } from './components/PriceModal';
+import { EditItemModal } from './components/EditItemModal';
+import { MenuModal } from './components/MenuModal';
 import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 
 export default function ListScreen() {
