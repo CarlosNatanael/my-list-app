@@ -8,6 +8,7 @@ import { AddItemForm } from './_components/AddItemForm';
 import { PriceModal } from './_components/PriceModal';
 import { EditItemModal } from './_components/EditItemModal';
 import { MenuModal } from './_components/MenuModal';
+import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 
 export default function ListScreen() {
   const { 
@@ -122,8 +123,6 @@ export default function ListScreen() {
         contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 150 }}
         stickySectionHeadersEnabled={false}
       />
-
-      {/* Componentes que aparecem quando NÃO estamos adicionando item */}
       {!isAddingItem && (
         <>
           <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16, height: 60 + insets.bottom }]}>
@@ -133,22 +132,23 @@ export default function ListScreen() {
           <TouchableOpacity style={[styles.fab, { bottom: 80 + insets.bottom }]} onPress={() => setIsAddingItem(true)}><Plus color="#fff" size={28} /></TouchableOpacity>
         </>
       )}
-
-      {/* Formulário aparece quando ESTAMOS adicionando item */}
       {isAddingItem && (
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoider}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <AddItemForm 
-            isVisible={isAddingItem} 
-            onAdd={handleAddItem} 
-            onClose={() => setIsAddingItem(false)}
-            categories={activeCategories}
-          />
-        </KeyboardAvoidingView>
+        <View style={[StyleSheet.absoluteFill, { zIndex: 10 }]}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'android' ? 'height' : 'padding'}
+            keyboardVerticalOffset={Platform.OS === 'android' ? 64 : 0}>
+            <SafeAreaView style={{ flex: 1, justifyContent: 'flex-end' }}>
+              <AddItemForm 
+                isVisible={isAddingItem} 
+                onAdd={handleAddItem} 
+                onClose={() => setIsAddingItem(false)}
+                categories={activeCategories}
+              />
+            </SafeAreaView>
+          </KeyboardAvoidingView>
+        </View>
       )}
-
       <PriceModal item={itemForPrice} visible={isPriceModalVisible} onClose={() => setPriceModalVisible(false)} onSave={handleSavePrice} />
       <EditItemModal item={itemForEdit} visible={isEditModalVisible} onClose={() => setEditModalVisible(false)} onSave={handleSaveItem} onDelete={handleDeleteItem} />
     </SafeAreaView>
@@ -158,8 +158,6 @@ export default function ListScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     keyboardAvoider: {
-      // NOVO: Posicionamento absoluto para ancorar o formulário na base
-      position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,

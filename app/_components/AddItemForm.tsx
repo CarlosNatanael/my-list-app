@@ -1,4 +1,4 @@
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -51,62 +51,64 @@ export const AddItemForm = ({
   }
 
   return (
-    // A MUDANÇA PRINCIPAL ESTÁ AQUI: paddingBottom no View externo
-    <View style={[formStyles.addItemContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 15 }]}>
-        <TouchableOpacity style={formStyles.closeButton} onPress={onClose}>
-            <X color="#555" size={24} />
-        </TouchableOpacity>
-        <ScrollView>
-            <Text style={formStyles.formTitle}>Adicionar Item</Text>
-            <TextInput
-                style={formStyles.input}
-                placeholder="Nome do produto"
-                value={name}
-                onChangeText={setName}
-                placeholderTextColor="#888"
-            />
-            <View style={formStyles.quantityContainer}>
-                <TextInput
-                style={[formStyles.input, { flex: 1 }]}
-                placeholder="Qtde / Kg"
-                keyboardType="numeric"
-                value={quantity}
-                onChangeText={setQuantity}
-                placeholderTextColor="#888"
-                />
-                <View style={formStyles.unitSelector}>
-                <TouchableOpacity
-                    style={[formStyles.unitButton, unit === 'un' && formStyles.unitButtonSelected]}
-                    onPress={() => setUnit('un')}
-                >
-                    <Text style={[formStyles.unitText, unit === 'un' && formStyles.unitTextSelected]}>UN</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[formStyles.unitButton, unit === 'kg' && formStyles.unitButtonSelected]}
-                    onPress={() => setUnit('kg')}
-                >
-                    <Text style={[formStyles.unitText, unit === 'kg' && formStyles.unitTextSelected]}>KG</Text>
-                </TouchableOpacity>
-                </View>
-            </View>
-            <Text style={formStyles.categoryTitle}>Categoria</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={formStyles.categoryScrollView}>
-                {categories.map(cat => (
-                <TouchableOpacity
-                    key={cat}
-                    style={[formStyles.categoryButton, category === cat && formStyles.categoryButtonSelected]}
-                    onPress={() => setCategory(cat)}
-                >
-                    <Text style={[formStyles.categoryText, category === cat && formStyles.categoryTextSelected]}>{cat}</Text>
-                </TouchableOpacity>
-                ))}
-            </ScrollView>
+    <KeyboardAvoidingView 
+    behavior={Platform.OS == "android" ? "height" : "padding"}>
+      <ScrollView style={[formStyles.addItemContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 15 }]}>
+          <TouchableOpacity style={formStyles.closeButton} onPress={onClose}>
+              <X color="#555" size={24} />
+          </TouchableOpacity>
+          <View>
+              <Text style={formStyles.formTitle}>Adicionar Item</Text>
+              <TextInput
+                  style={formStyles.input}
+                  placeholder="Nome do produto"
+                  value={name}
+                  onChangeText={setName}
+                  placeholderTextColor="#888"
+              />
+              <View style={formStyles.quantityContainer}>
+                  <TextInput
+                  style={[formStyles.input, { flex: 1 }]}
+                  placeholder="Qtde / Kg"
+                  keyboardType="numeric"
+                  value={quantity}
+                  onChangeText={setQuantity}
+                  placeholderTextColor="#888"
+                  />
+                  <View style={formStyles.unitSelector}>
+                  <TouchableOpacity
+                      style={[formStyles.unitButton, unit === 'un' && formStyles.unitButtonSelected]}
+                      onPress={() => setUnit('un')}
+                  >
+                      <Text style={[formStyles.unitText, unit === 'un' && formStyles.unitTextSelected]}>UN</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                      style={[formStyles.unitButton, unit === 'kg' && formStyles.unitButtonSelected]}
+                      onPress={() => setUnit('kg')}
+                  >
+                      <Text style={[formStyles.unitText, unit === 'kg' && formStyles.unitTextSelected]}>KG</Text>
+                  </TouchableOpacity>
+                  </View>
+              </View>
+              <Text style={formStyles.categoryTitle}>Categoria</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={formStyles.categoryScrollView}>
+                  {categories.map(cat => (
+                  <TouchableOpacity
+                      key={cat}
+                      style={[formStyles.categoryButton, category === cat && formStyles.categoryButtonSelected]}
+                      onPress={() => setCategory(cat)}
+                  >
+                      <Text style={[formStyles.categoryText, category === cat && formStyles.categoryTextSelected]}>{cat}</Text>
+                  </TouchableOpacity>
+                  ))}
+              </ScrollView>
 
-            <TouchableOpacity style={formStyles.addButton} onPress={handleAddItem}>
-                <Text style={formStyles.addButtonText}>Adicionar Item</Text>
-            </TouchableOpacity>
-        </ScrollView>
-    </View>
+              <TouchableOpacity style={formStyles.addButton} onPress={handleAddItem}>
+                  <Text style={formStyles.addButtonText}>Adicionar Item</Text>
+              </TouchableOpacity>
+          </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
