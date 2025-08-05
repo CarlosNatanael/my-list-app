@@ -1,6 +1,8 @@
-# Buy Fast - App de Lista de Compras Inteligente 🛒⚡
+# **Buy Fast** - App de Lista de Compras Inteligente 🛒⚡
 
-![Buy Fast](image.png)
+<p align="center">
+  <img src="assets/images/icon.png" alt="Buy Fast Logo" width="200"/>
+</p>
 
 O assistente de compras inteligente que organiza e otimiza suas idas ao supermercado, farmácia ou loja de conveniência.
 
