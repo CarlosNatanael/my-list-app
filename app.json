@@ -6,8 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mylistapp",
-    "userInterfaceStyle": "android",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -21,10 +20,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "softwareKeyboardLayoutMode": "resize",
       "package": "com.carlosnatanael.mylistapp",
-      "userInterfaceStyle": "automatic" 
+      "userInterfaceStyle": "automatic"
     },
     "web": {
       "bundler": "metro",
@@ -36,9 +33,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "packagerOpts": {
-      "config": "metro.config.js"
     },
     "extra": {
       "eas": {
