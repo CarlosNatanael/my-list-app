@@ -139,9 +139,9 @@ export default function ListScreen() {
             behavior={Platform.OS === 'android' ? 'height' : 'padding'}
             keyboardVerticalOffset={Platform.OS === 'android' ? 64 : 0}>
             <SafeAreaView style={{ flex: 1, justifyContent: 'flex-end' }}>
-              <AddItemForm 
-                isVisible={isAddingItem} 
-                onAdd={handleAddItem} 
+              <AddItemForm
+                isVisible={isAddingItem}
+                onAdd={handleAddItem}
                 onClose={() => setIsAddingItem(false)}
                 categories={activeCategories}
               />
