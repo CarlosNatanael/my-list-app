@@ -2,9 +2,32 @@ import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ListProvider } from './_context/ListContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, SplashScreen } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { useEffect } from 'react';
+
+// Impede que a tela de splash suma automaticamente antes de tudo estar carregado
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Carrega as fontes do seu aplicativo
+  const [fontsLoaded, fontError] = useFonts({
+    'SpaceMono-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    // Esconde a tela de splash assim que as fontes forem carregadas ou se der erro
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  // Se as fontes não carregaram ainda (ou deu erro), não renderiza nada para evitar o crash
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
+  // Se chegou aqui, as fontes estão prontas e o app pode ser renderizado com segurança
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ListProvider>
