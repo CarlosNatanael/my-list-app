@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, ScrollView, Dimensions } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { Purchase, Item } from '../context/ListContext';
+import { Purchase, Item } from '../../context/ListContext';
 import { PieChart } from 'react-native-chart-kit';
 
 // NOVO: Cores predefinidas para cada categoria

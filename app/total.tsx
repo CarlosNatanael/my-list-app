@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { useList, Item } from './context/ListContext';
+import { useList, Item } from '../context/ListContext';
 import { useRouter } from 'expo-router';
 import { Store, CheckCircle, CreditCard, Banknote, Landmark } from 'lucide-react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';

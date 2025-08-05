@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Text, StyleSheet, View, TextInput, TouchableOpacity, Alert, SectionList, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useList, Item } from './context/ListContext';
-import { AddItemForm } from './components/AddItemForm';
+import { useList, Item } from '../context/ListContext';
+import { AddItemForm } from '../components/AddItemForm';
 import { Check, X, Plus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
