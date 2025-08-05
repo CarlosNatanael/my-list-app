@@ -23,13 +23,14 @@ type ListContextType = {
   updateItem: (id: string, name: string, quantity: number, unit: 'un' | 'kg') => void;
   deleteItem: (id: string) => void;
   clearActiveList: () => void;
+  uncheckAllItems: () => void; // NOVO: Adicionado tipo da função
   savePurchase: (storeName: string, paymentMethod: string) => Promise<void>;
   purchaseHistory: Purchase[];
   savedLists: SavedList[];
   saveListAsTemplate: (name: string) => Promise<void>;
   loadListFromTemplate: (listId: string) => void;
   deleteTemplate: (listId: string) => Promise<void>;
-  updateTemplate: (listId: string, newName: string, newItems: Omit<Item, 'id' | 'price' | 'checked'>[]) => Promise<void>; // Nova função
+  updateTemplate: (listId: string, newName: string, newItems: Omit<Item, 'id' | 'price' | 'checked'>[]) => Promise<void>;
   uncheckedItemsByCategory: { title: string; data: Item[] }[];
   checkedItems: Item[];
   totalPrice: number;
@@ -90,6 +91,11 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     await AsyncStorage.setItem('@appCategories', JSON.stringify(updatedCategories));
   }, [categories, activeListType]);
   
+  // NOVO: Função para desmarcar todos os itens
+  const uncheckAllItems = useCallback(() => {
+    updateActiveList(items.map(item => ({ ...item, checked: false })));
+  }, [items, activeListType]);
+
   const savePurchase = useCallback(async (storeName: string, paymentMethod: string) => {
     const newPurchase: Purchase = {
       id: Date.now().toString(),
@@ -166,6 +172,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     savePurchase, purchaseHistory, savedLists, saveListAsTemplate, loadListFromTemplate,
     uncheckedItemsByCategory, checkedItems, totalPrice,
     checkedItemsTotalPrice, checkedItemsCount, updateCategories, deleteTemplate, updateTemplate,
+    uncheckAllItems, // NOVO: Exportando a função
   };
 
   return <ListContext.Provider value={value as ListContextType}>{children}</ListContext.Provider>;
