@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { ShoppingCart, Pill, Beer, History } from 'lucide-react-native';
 import { useList } from '../context/ListContext';
 
@@ -15,6 +15,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ title: 'Buy Fast' }} />
+
       <Text style={styles.title}>Minhas compras</Text>
       <Text style={styles.subtitle}>Selecione uma opção para começar</Text>
       <View style={styles.menuContainer}>
