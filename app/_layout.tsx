@@ -10,9 +10,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
 
-  // 2. Adicione este useEffect
   useEffect(() => {
-    // Esconde a tela de splash assim que o layout estiver pronto
     SplashScreen.hideAsync();
   }, []);
 
