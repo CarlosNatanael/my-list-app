@@ -19,8 +19,8 @@ export default function ListScreen() {
     checkedItemsCount, 
     updateItem, 
     deleteItem,
-    addItem, // Pega a função de adicionar do contexto
-    activeCategories // Pega as categorias ativas do contexto
+    addItem,
+    activeCategories
   } = useList();
   
   const insets = useSafeAreaInsets();
@@ -54,7 +54,7 @@ export default function ListScreen() {
     setEditModalVisible(true);
   };
 
-  // Esta função agora recebe os dados do formulário e os passa para o contexto
+
   const handleAddItem = (itemData: Omit<Item, 'id' | 'price' | 'checked'>) => {
     addItem(itemData);
     setIsAddingItem(false);
