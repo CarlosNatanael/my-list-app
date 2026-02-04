@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { SectionList, StatusBar, View, Text, TouchableOpacity, StyleSheet, Share, Alert, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus, ShoppingCart, DollarSign, Pencil, Menu, Share2, Check } from 'lucide-react-native';
@@ -8,6 +8,7 @@ import { AddItemForm } from '../components/AddItemForm';
 import { PriceModal } from '../components/PriceModal';
 import { EditItemModal } from '../components/EditItemModal';
 import { MenuModal } from '../components/MenuModal';
+import { Search } from 'lucide-react-native';
 
 export default function ListScreen() {
   const { 
@@ -20,10 +21,12 @@ export default function ListScreen() {
     updateItem, 
     deleteItem,
     addItem,
-    activeCategories
+    activeCategories,
+    importList
   } = useList();
   
   const insets = useSafeAreaInsets();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [itemForPrice, setItemForPrice] = useState<Item | null>(null);
   const [itemForEdit, setItemForEdit] = useState<Item | null>(null);
@@ -60,21 +63,39 @@ export default function ListScreen() {
     setIsAddingItem(false);
   };
 
+  const filteredSections = useMemo(() => {
+    if (!searchQuery) return uncheckedItemsByCategory;
+    return uncheckedItemsByCategory.map(section => ({
+      ...section,
+      data: section.data.filter(item =>
+        item.name.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase())
+      )
+    })).filter(section => section.data.length > 0);
+  }, [searchQuery, uncheckedItemsByCategory]);
+
   const onShare = async () => {
     try {
-      let message = "Minha Lista de Compras (via Buy Fast):\n\n";
+      let message = "*Minha Lista de Compras (Buy Fast)*\n\n";
+      
       uncheckedItemsByCategory.forEach(section => {
-        message += `*${section.title}*\n`;
+        message += `*${section.title.toUpperCase()}*\n`;
         section.data.forEach(item => {
-          message += `- ${item.name} (${item.quantity} ${item.unit})\n`;
+          const priceStr = item.price ? ` - R$ ${item.price.toFixed(2)}` : '';
+          message += `- ${item.name} (${item.quantity} ${item.unit})${priceStr}\n`;
         });
         message += '\n';
       });
+
+      message += "--- CÓDIGO DE IMPORTAÇÃO ---\n";
+      message += JSON.stringify(items);
 
       await Share.share({ message });
     } catch (error: any) {
       Alert.alert(error.message);
     }
+  };
+
+  const handleImport = async () => {
   };
 
   const renderItem = ({ item }: { item: Item }) => (
@@ -110,11 +131,28 @@ export default function ListScreen() {
         }}
       />
       <StatusBar barStyle="dark-content" />
+
+      <View style={styles.searchContainer}>
+        <Search color="#8E8E93" size={20} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar itens na lista..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#8E8E93"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Text style={{color: '#007AFF'}}>Limpar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <MenuModal visible={isMenuVisible} onClose={() => setMenuVisible(false)} />
       
       <SectionList
         style={{flex: 1}}
-        sections={uncheckedItemsByCategory}
+        sections={filteredSections}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         renderSectionHeader={({ section: { title } }) => <Text style={styles.sectionHeader}>{title}</Text>}
@@ -161,6 +199,8 @@ const styles = StyleSheet.create({
       left: 0,
       right: 0,
     },
+    searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F2F2F7', marginHorizontal: 15, marginTop: 10, marginBottom: 5, paddingHorizontal: 12, borderRadius: 10, height: 45,},
+    searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: '#000', },
     sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#333', backgroundColor: '#f9f9f9', paddingTop: 15, paddingBottom: 5, paddingHorizontal: 10 },
     item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8f8f8', marginBottom: 10, borderRadius: 8, padding: 12, justifyContent: 'space-between' },
     itemInfo: { flex: 1 },

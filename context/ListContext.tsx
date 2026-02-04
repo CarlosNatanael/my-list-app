@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext, useMemo, useCallback, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Clipboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const INITIAL_MERCADO_CATEGORIES = [ 'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 'Bebidas', 'Limpeza', 'Higiene', 'Outros' ];
@@ -38,6 +38,7 @@ type ListContextType = {
   checkedItemsTotalPrice: number;
   checkedItemsCount: number;
   updateCategories: (newCategories: string[]) => Promise<void>;
+  importList: (jsonString: string) => void;
 };
 
 const ListContext = createContext<ListContextType | undefined>(undefined);
@@ -70,12 +71,43 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 
         const savedCategories = await AsyncStorage.getItem('@appCategories');
         if (savedCategories) setCategories(JSON.parse(savedCategories));
+
+        const savedActiveLists = await AsyncStorage.getItem('@appLists');
+        if (savedActiveLists) setLists(JSON.parse(savedActiveLists));
       } catch (e) {
         console.error('Falha ao carregar dados.', e);
       }
     };
     loadData();
   }, []);
+
+  useEffect(() => {
+    const saveLists = async () => {
+      try {
+        await AsyncStorage.setItem('@appLists', JSON.stringify(lists));
+      } catch (e) {
+        console.error('Falha ao salvar listas ativas.', e);
+      }
+    };
+    saveLists();
+  }, [lists]);
+
+  const importList = useCallback((jsonString: string) => {
+    try {
+      const importedItems: Item[] = JSON.parse(jsonString);
+      if (Array.isArray(importedItems) && importedItems.length > 0) {
+        const validatedItems = importedItems.map(item => ({
+          ...item,
+          id: Date.now().toString() + Math.random(),
+          checked: false
+        }));
+        updateActiveList(validatedItems);
+        Alert.alert("Sucesso", "Lista importada com sucesso!");
+      }
+    } catch (e) {
+      Alert.alert("Erro", "O código da lista é inválido.");
+    }
+  }, [activeListType]);
   
   const activeCategories = useMemo(() => categories[activeListType], [categories, activeListType]);
   const items = useMemo(() => lists[activeListType], [lists, activeListType]);
@@ -92,7 +124,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     await AsyncStorage.setItem('@appCategories', JSON.stringify(updatedCategories));
   }, [categories, activeListType]);
   
-  // NOVO: Função para desmarcar todos os itens
+  // Função para desmarcar todos os itens
   const uncheckAllItems = useCallback(() => {
     updateActiveList(items.map(item => ({ ...item, checked: false })));
   }, [items, activeListType]);
@@ -173,7 +205,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     savePurchase, purchaseHistory, savedLists, saveListAsTemplate, loadListFromTemplate,
     uncheckedItemsByCategory, checkedItems, totalPrice,
     checkedItemsTotalPrice, checkedItemsCount, updateCategories, deleteTemplate, updateTemplate,
-    uncheckAllItems, // NOVO: Exportando a função
+    uncheckAllItems,importList
   };
 
   return <ListContext.Provider value={value as ListContextType}>{children}</ListContext.Provider>;
