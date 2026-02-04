@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useList } from '../context/ListContext';
@@ -80,7 +80,7 @@ export default function CategoriesScreen() {
       </TouchableOpacity>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 15 },
