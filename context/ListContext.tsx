@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext, useMemo, useCallback, useEffect } from 'react';
-import { Alert, Clipboard } from 'react-native';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const INITIAL_MERCADO_CATEGORIES = [ 'Hortifruti', 'Padaria', 'Açougue e Frios', 'Laticínios', 'Mercearia', 'Bebidas', 'Limpeza', 'Higiene', 'Outros' ];
@@ -39,6 +39,7 @@ type ListContextType = {
   checkedItemsCount: number;
   updateCategories: (newCategories: string[]) => Promise<void>;
   importList: (jsonString: string) => void;
+  exportList: () => string;
 };
 
 const ListContext = createContext<ListContextType | undefined>(undefined);
@@ -92,6 +93,15 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     saveLists();
   }, [lists]);
 
+  const activeCategories = useMemo(() => categories[activeListType], [categories, activeListType]);
+  const items = useMemo(() => lists[activeListType], [lists, activeListType]);
+  
+  const updateActiveList = (newItems: Item[]) => setLists(prev => ({ ...prev, [activeListType]: newItems }));
+
+  const exportList = useCallback(() => {
+    return JSON.stringify(items);
+  }, [items]);
+
   const importList = useCallback((jsonString: string) => {
     try {
       const importedItems: Item[] = JSON.parse(jsonString);
@@ -103,28 +113,27 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
         }));
         updateActiveList(validatedItems);
         Alert.alert("Sucesso", "Lista importada com sucesso!");
+      } else {
+        throw new Error();
       }
     } catch (e) {
-      Alert.alert("Erro", "O código da lista é inválido.");
+      Alert.alert("Erro", "O conteúdo copiado não é um formato de lista válido.");
     }
-  }, [activeListType]);
+  }, [activeListType, items]);
   
-  const activeCategories = useMemo(() => categories[activeListType], [categories, activeListType]);
-  const items = useMemo(() => lists[activeListType], [lists, activeListType]);
-  const updateActiveList = (newItems: Item[]) => setLists(prev => ({ ...prev, [activeListType]: newItems }));
   const addItem = useCallback((item: Omit<Item, 'id' | 'checked'>) => updateActiveList([{ ...item, id: Date.now().toString(), checked: false }, ...items]), [items, activeListType]);
   const toggleItemChecked = useCallback((id: string) => updateActiveList(items.map(item => item.id === id ? { ...item, checked: !item.checked } : item)), [items, activeListType]);
   const updateItemPrice = useCallback((id: string, price: number) => updateActiveList(items.map(item => (item.id === id ? { ...item, price } : item))), [items, activeListType]);
   const updateItem = useCallback((id: string, name: string, quantity: number, unit: 'un' | 'kg') => updateActiveList(items.map(item => item.id === id ? { ...item, name, quantity, unit } : item)), [items, activeListType]);
   const deleteItem = useCallback((id: string) => updateActiveList(items.filter(item => item.id !== id)), [items, activeListType]);
-  const clearActiveList = useCallback(() => Alert.alert("Limpar Lista", "Tem certeza?", [ { text: "Cancelar" }, { text: "Limpar", onPress: () => updateActiveList([]) } ]), [activeListType]);
+  const clearActiveList = useCallback(() => Alert.alert("Limpar Lista", "Tem certeza que deseja apagar todos os itens?", [ { text: "Cancelar" }, { text: "Limpar", onPress: () => updateActiveList([]) } ]), [activeListType]);
+  
   const updateCategories = useCallback(async (newCategories: string[]) => {
     const updatedCategories = { ...categories, [activeListType]: newCategories };
     setCategories(updatedCategories);
     await AsyncStorage.setItem('@appCategories', JSON.stringify(updatedCategories));
   }, [categories, activeListType]);
   
-  // Função para desmarcar todos os itens
   const uncheckAllItems = useCallback(() => {
     updateActiveList(items.map(item => ({ ...item, checked: false })));
   }, [items, activeListType]);
@@ -189,6 +198,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
   const totalPrice = useMemo(() => items.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [items]);
   const checkedItemsTotalPrice = useMemo(() => checkedItems.reduce((total, item) => total + (item.price || 0) * item.quantity, 0), [checkedItems]);
   const checkedItemsCount = useMemo(() => checkedItems.reduce((total, item) => (item.unit === 'kg' ? total + 1 : total + item.quantity), 0), [checkedItems]);
+  
   const uncheckedItemsByCategory = useMemo(() => {
     const grouped = uncheckedItems.reduce((acc, item) => {
       const { category } = item;
@@ -205,7 +215,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
     savePurchase, purchaseHistory, savedLists, saveListAsTemplate, loadListFromTemplate,
     uncheckedItemsByCategory, checkedItems, totalPrice,
     checkedItemsTotalPrice, checkedItemsCount, updateCategories, deleteTemplate, updateTemplate,
-    uncheckAllItems,importList
+    uncheckAllItems, importList, exportList
   };
 
   return <ListContext.Provider value={value as ListContextType}>{children}</ListContext.Provider>;
